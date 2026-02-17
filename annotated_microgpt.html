@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Annotated MicroGPT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf8f5;
+  --bg-code: #1e1e2e;
+  --bg-note: #f0ede8;
+  --bg-math: #eef1f8;
+  --text: #2c2825;
+  --text-secondary: #6b6560;
+  --text-code: #cdd6f4;
+  --accent: #c05030;
+  --accent-light: #e8bfb0;
+  --accent-dark: #8a2a18;
+  --border: #d8d2ca;
+  --link: #2860a8;
+  --heading: #1a1715;
+  --keyword: #cba6f7;
+  --string: #a6e3a1;
+  --comment: #6c7086;
+  --function: #89b4fa;
+  --number: #fab387;
+  --class: #f9e2af;
+  --builtin: #94e2d5;
+  --operator: #89dceb;
+  --decorator: #f5c2e7;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 17px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Hero ── */
+header {
+  padding: 6rem 0 4rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3.5rem;
+}
+
+header h1 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: var(--heading);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+}
+
+header h1 span {
+  color: var(--accent);
+}
+
+header .subtitle {
+  font-size: 1.3rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+header .meta {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+header .epigraph {
+  margin-top: 2rem;
+  padding: 1.5rem 2rem;
+  background: var(--bg-note);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+header .epigraph cite {
+  display: block;
+  margin-top: 0.5rem;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+/* ── Table of Contents ── */
+nav.toc {
+  margin-bottom: 4rem;
+  padding: 2rem 2.5rem;
+  background: var(--bg-note);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+nav.toc h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+nav.toc ol {
+  list-style: none;
+  counter-reset: toc-counter;
+}
+
+nav.toc ol li {
+  counter-increment: toc-counter;
+  margin-bottom: 0.35rem;
+}
+
+nav.toc ol li::before {
+  content: counter(toc-counter, decimal-leading-zero) ".";
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-right: 0.75rem;
+  font-weight: 500;
+}
+
+nav.toc a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.05rem;
+  transition: color 0.2s;
+}
+
+nav.toc a:hover { color: var(--accent); }
+
+/* ── Sections ── */
+section {
+  margin-bottom: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-of-type { border-bottom: none; }
+
+h2 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h2 .section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.05em;
+}
+
+h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin-bottom: 1.2rem;
+  font-size: 1.05rem;
+}
+
+strong { font-weight: 600; color: var(--heading); }
+em { font-style: italic; }
+
+a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+
+/* ── Code blocks ── */
+.code-block {
+  margin: 1.8rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.code-header {
+  background: #181825;
+  padding: 0.6rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.code-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a6adc8;
+}
+
+.code-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.code-tag.original {
+  background: rgba(203, 166, 247, 0.15);
+  color: #cba6f7;
+}
+
+.code-tag.rewrite {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
+pre {
+  background: var(--bg-code);
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--text-code);
+  tab-size: 4;
+}
+
+pre code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* inline code */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: rgba(0,0,0,0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  color: var(--accent-dark);
+}
+
+/* syntax highlighting classes */
+.kw { color: #cba6f7; font-weight: 500; }
+.fn { color: #89b4fa; }
+.st { color: #a6e3a1; }
+.cm { color: #6c7086; font-style: italic; }
+.nu { color: #fab387; }
+.cl { color: #f9e2af; }
+.bi { color: #94e2d5; }
+.op { color: #89dceb; }
+.dc { color: #f5c2e7; }
+.va { color: #cdd6f4; }
+.se { color: #f2cdcd; }
+
+/* ── Note / Math / Aside boxes ── */
+.note {
+  margin: 1.8rem 0;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-note);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.98rem;
+}
+
+.note .note-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.math-box {
+  margin: 1.8rem 0;
+  padding: 1.25rem 1.75rem;
+  background: var(--bg-math);
+  border-radius: 8px;
+  border: 1px solid #d0d8e8;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.9;
+}
+
+.math-box .math-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #5570a0;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.math {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1em;
+}
+
+.math sub { font-size: 0.7em; }
+.math sup { font-size: 0.7em; }
+
+/* ── Diagram / figure boxes ── */
+.diagram {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.diagram pre {
+  background: transparent;
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: left;
+  display: inline-block;
+  padding: 0;
+  box-shadow: none;
+}
+
+.diagram .caption {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.75rem;
+}
+
+/* ── Lists inside prose ── */
+ul.prose-list, ol.prose-list {
+  margin: 1rem 0 1.5rem 1.5rem;
+  font-size: 1.05rem;
+}
+
+ul.prose-list li, ol.prose-list li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+/* ── Footer ── */
+footer {
+  padding: 3rem 0 4rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+footer .sig {
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  html { font-size: 15px; }
+  header h1 { font-size: 2.2rem; }
+  .container { padding: 0 1.25rem; }
+  pre { font-size: 0.72rem; padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- HEADER                                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<header>
+  <h1>The Annotated <span>MicroGPT</span></h1>
+  <div class="subtitle">A line-by-line walkthrough of training a GPT from absolute zero,<br>in pure, dependency-free Python.</div>
+  <div class="meta">Based on <code>microgpt.py</code> by Andrej Karpathy &nbsp;·&nbsp; Annotated 2025</div>
+  <div class="epigraph">
+    "The most atomic way to train and inference a GPT in pure, dependency-free Python.
+    This file is the complete algorithm. Everything else is just efficiency."
+    <cite>— Andrej Karpathy, microgpt.py</cite>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s0">Prologue — What Is This?</a></li>
+    <li><a href="#s1">The Dataset — A Corpus of Names</a></li>
+    <li><a href="#s2">The Tokenizer — From Characters to Integers</a></li>
+    <li><a href="#s3">Autograd — Backpropagation from Scratch</a></li>
+    <li><a href="#s4">Parameters — Initializing the Model's Knowledge</a></li>
+    <li><a href="#s5">Building Blocks — Linear, Softmax, RMSNorm</a></li>
+    <li><a href="#s6">The GPT Forward Pass — Attention Is All You Need (Here)</a></li>
+    <li><a href="#s7">The Training Loop — Adam Descends the Loss Landscape</a></li>
+    <li><a href="#s8">Inference — Sampling New Names</a></li>
+    <li><a href="#s9">Epilogue — Where Efficiency Begins</a></li>
+  </ol>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §0  PROLOGUE                                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s0">
+<h2><span class="section-num">§0</span> Prologue — What Is This?</h2>
+
+<p>
+<code>microgpt.py</code> is a single Python file — roughly 140 lines of logic — that contains <em>every single component</em> needed to train a GPT language model and generate text from it. There are no dependencies: no PyTorch, no NumPy, no TensorFlow. It is Python, <code>math</code>, and <code>random</code> — nothing else.
+</p>
+
+<p>
+The file implements, from first principles:
+</p>
+
+<ul class="prose-list">
+  <li>A <strong>scalar autograd engine</strong> (automatic differentiation) that tracks computation and computes gradients via backpropagation.</li>
+  <li>A <strong>character-level tokenizer</strong> that converts strings into sequences of integers.</li>
+  <li>A <strong>GPT-2-style Transformer</strong> architecture, complete with multi-head self-attention, residual connections, RMSNorm, and an MLP block.</li>
+  <li>The <strong>Adam optimizer</strong>, with bias correction and linear learning rate decay.</li>
+  <li>An <strong>autoregressive sampling loop</strong> with temperature-controlled generation.</li>
+</ul>
+
+<p>
+The task is modest — learning to generate human names — but the architecture is <em>exactly</em> the same one behind GPT-2, GPT-3, and their descendants. The only differences are scale (16-dimensional embeddings instead of 768 or more) and minor simplifications (RMSNorm instead of LayerNorm, ReLU instead of GELU, no bias terms).
+</p>
+
+<p>
+This document walks through every line, explains the theory behind it, and offers a cleaned-up rewrite that makes the implicit structures explicit. Think of the original as the poem; this is the commentary.
+</p>
+
+<div class="note">
+  <div class="note-title">Prerequisites</div>
+  This annotation assumes familiarity with basic Python, a rough intuition for what neural networks do (they learn functions from data), and a willingness to follow some calculus. No prior knowledge of Transformers is needed — we build it here from the ground up.
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §1  DATASET                                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s1">
+<h2><span class="section-num">§1</span> The Dataset — A Corpus of Names</h2>
+
+<p>
+Every language model begins with data. Here, the dataset is a text file containing roughly 32,000 common human first names — one per line. Names are an ideal micro-dataset: they're short (rarely more than 12 characters), they have clear statistical structure (names tend to start with capital letters, use common phoneme patterns, and end cleanly), and a model that learns to generate plausible names provides an immediately intuitive signal that learning has occurred.
+</p>
+
+<p>
+The original code downloads this file if it doesn't exist, reads it, strips whitespace, shuffles the order, and stores it as a list of strings:
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Dataset Loading</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">import</span> <span class="va">os</span>
+<span class="kw">import</span> <span class="va">math</span>
+<span class="kw">import</span> <span class="va">random</span>
+<span class="va">random</span>.<span class="fn">seed</span>(<span class="nu">42</span>)
+
+<span class="kw">if not</span> <span class="va">os</span>.<span class="va">path</span>.<span class="fn">exists</span>(<span class="st">'input.txt'</span>):
+    <span class="kw">import</span> <span class="va">urllib</span>.<span class="va">request</span>
+    <span class="va">names_url</span> = <span class="st">'https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt'</span>
+    <span class="va">urllib</span>.<span class="va">request</span>.<span class="fn">urlretrieve</span>(<span class="va">names_url</span>, <span class="st">'input.txt'</span>)
+<span class="va">docs</span> = [<span class="va">l</span>.<span class="fn">strip</span>() <span class="kw">for</span> <span class="va">l</span> <span class="kw">in</span> <span class="fn">open</span>(<span class="st">'input.txt'</span>).<span class="fn">read</span>().<span class="fn">strip</span>().<span class="fn">split</span>(<span class="st">'\n'</span>) <span class="kw">if</span> <span class="va">l</span>.<span class="fn">strip</span>()]
+<span class="va">random</span>.<span class="fn">shuffle</span>(<span class="va">docs</span>)
+<span class="fn">print</span>(<span class="st">f"num docs: </span>{<span class="fn">len</span>(<span class="va">docs</span>)}<span class="st">"</span>)</code></pre>
+</div>
+
+<p>
+Let's look at what this does step by step:
+</p>
+
+<p>
+<strong>Reproducibility.</strong> <code>random.seed(42)</code> fixes the pseudorandom number generator so every run produces identical results. The choice of 42 is a cultural artifact (a nod to Douglas Adams), but any integer would work. This is essential for debugging: if you change the code and the loss changes, you know it was your change, not randomness.
+</p>
+
+<p>
+<strong>Lazy download.</strong> The <code>os.path.exists</code> check avoids re-downloading on subsequent runs. The dataset comes from the <a href="https://github.com/karpathy/makemore">makemore repository</a>.
+</p>
+
+<p>
+<strong>Parsing.</strong> The file is read in its entirety, split on newlines, stripped of whitespace, and empty lines are filtered out. The result is a plain Python list of strings like <code>["emma", "olivia", "ava", ...]</code>.
+</p>
+
+<p>
+<strong>Shuffling.</strong> The documents (names) are shuffled before training. This ensures the model doesn't see names in alphabetical order, which would create artificial correlations between consecutive training examples.
+</p>
+
+<p>
+Here's a more explicit rewrite:
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Dataset Loading</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="kw">import</span> <span class="va">os</span>
+<span class="kw">import</span> <span class="va">math</span>
+<span class="kw">import</span> <span class="va">random</span>
+<span class="kw">from</span> <span class="va">urllib.request</span> <span class="kw">import</span> <span class="fn">urlretrieve</span>
+
+<span class="cm"># Fix random seed for reproducibility</span>
+<span class="va">SEED</span> = <span class="nu">42</span>
+<span class="va">random</span>.<span class="fn">seed</span>(<span class="va">SEED</span>)
+
+<span class="cm"># ── Load dataset ──────────────────────────────────────────</span>
+<span class="va">DATASET_PATH</span> = <span class="st">"input.txt"</span>
+<span class="va">DATASET_URL</span>  = (
+    <span class="st">"https://raw.githubusercontent.com/"</span>
+    <span class="st">"karpathy/makemore/refs/heads/master/names.txt"</span>
+)
+
+<span class="kw">if not</span> <span class="va">os</span>.<span class="va">path</span>.<span class="fn">exists</span>(<span class="va">DATASET_PATH</span>):
+    <span class="fn">print</span>(<span class="st">f"Downloading dataset to </span>{<span class="va">DATASET_PATH</span>}<span class="st">..."</span>)
+    <span class="fn">urlretrieve</span>(<span class="va">DATASET_URL</span>, <span class="va">DATASET_PATH</span>)
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="va">DATASET_PATH</span>, <span class="st">"r"</span>) <span class="kw">as</span> <span class="va">f</span>:
+    <span class="va">raw_text</span> = <span class="va">f</span>.<span class="fn">read</span>()
+
+<span class="cm"># Each non-empty line is one "document" (a single name)</span>
+<span class="va">documents</span>: <span class="cl">list</span>[<span class="cl">str</span>] = [
+    <span class="va">line</span>.<span class="fn">strip</span>()
+    <span class="kw">for</span> <span class="va">line</span> <span class="kw">in</span> <span class="va">raw_text</span>.<span class="fn">split</span>(<span class="st">"\n"</span>)
+    <span class="kw">if</span> <span class="va">line</span>.<span class="fn">strip</span>()
+]
+
+<span class="cm"># Shuffle to avoid alphabetical ordering bias</span>
+<span class="va">random</span>.<span class="fn">shuffle</span>(<span class="va">documents</span>)
+<span class="fn">print</span>(<span class="st">f"Loaded </span>{<span class="fn">len</span>(<span class="va">documents</span>)}<span class="st"> documents (names)"</span>)</code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Why "documents"?</div>
+  Karpathy uses the term <em>docs</em> even though each document is just a single name. This is intentional: the code generalizes to any dataset of text documents. Swap in a file of Wikipedia articles or code snippets and the same pipeline works — just with a larger vocabulary and longer sequences.
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §2  TOKENIZER                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s2">
+<h2><span class="section-num">§2</span> The Tokenizer — From Characters to Integers</h2>
+
+<p>
+Neural networks operate on numbers, not characters. A <strong>tokenizer</strong> bridges this gap: it defines a vocabulary of discrete symbols and provides a bijection (one-to-one mapping) between symbols and integers. In production systems like GPT-2, the tokenizer uses <em>Byte Pair Encoding</em> (BPE) to split text into subword tokens. Here, the tokenizer is maximally simple: each unique character in the dataset becomes its own token.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Tokenizer</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="va">uchars</span> = <span class="fn">sorted</span>(<span class="fn">set</span>(<span class="st">''</span>.<span class="fn">join</span>(<span class="va">docs</span>)))  <span class="cm"># unique characters → token ids 0..n-1</span>
+<span class="va">BOS</span> = <span class="fn">len</span>(<span class="va">uchars</span>)                   <span class="cm"># token id for Beginning of Sequence</span>
+<span class="va">vocab_size</span> = <span class="fn">len</span>(<span class="va">uchars</span>) + <span class="nu">1</span>       <span class="cm"># total tokens: characters + BOS</span>
+<span class="fn">print</span>(<span class="st">f"vocab size: </span>{<span class="va">vocab_size</span>}<span class="st">"</span>)</code></pre>
+</div>
+
+<p>
+Let's unpack this carefully.
+</p>
+
+<p>
+<strong>Building the vocabulary.</strong> <code>''.join(docs)</code> concatenates every name into a single giant string. <code>set(...)</code> extracts the unique characters. <code>sorted(...)</code> puts them in a deterministic order (alphabetical). For a dataset of English names, this yields the 26 lowercase letters plus possibly some accented characters, hyphens, or apostrophes. Each character gets an implicit integer ID equal to its index in this sorted list.
+</p>
+
+<p>
+<strong>The BOS token.</strong> We need a special token to mark the <em>beginning of a sequence</em>. This is assigned the next available integer after all the character tokens. In this codebase, BOS also serves double duty as the <em>end of sequence</em> (EOS) marker — the model learns that when it sees BOS, it should predict the first character, and when it's time to stop generating, it should predict BOS again.
+</p>
+
+<p>
+<strong>Encoding and decoding.</strong> To encode a character into an integer: <code>uchars.index(ch)</code>. To decode: <code>uchars[token_id]</code>. These operations are O(<em>n</em>) and O(1) respectively, which is fine for a vocabulary of ~27 tokens.
+</p>
+
+<div class="diagram">
+<pre>
+  Text:    "emma"
+
+  Encode:  BOS → 'e' → 'm' → 'm' → 'a' → BOS
+           26     4    12    12     0     26
+
+  The model's job: given prefix [26, 4, 12, 12, 0],
+  predict the next token at each position.
+</pre>
+<div class="caption">Figure 1: A name is framed as a sequence prediction problem, bookended by the BOS token.</div>
+</div>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Tokenizer</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># ── Build character-level vocabulary ─────────────────────</span>
+<span class="va">all_text</span> = <span class="st">""</span>.<span class="fn">join</span>(<span class="va">documents</span>)
+<span class="va">unique_chars</span>: <span class="cl">list</span>[<span class="cl">str</span>] = <span class="fn">sorted</span>(<span class="fn">set</span>(<span class="va">all_text</span>))
+
+<span class="cm"># Character → integer mapping (and inverse)</span>
+<span class="va">char_to_id</span>: <span class="cl">dict</span>[<span class="cl">str</span>, <span class="cl">int</span>] = {<span class="va">ch</span>: <span class="va">i</span> <span class="kw">for</span> <span class="va">i</span>, <span class="va">ch</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="va">unique_chars</span>)}
+<span class="va">id_to_char</span>: <span class="cl">dict</span>[<span class="cl">int</span>, <span class="cl">str</span>] = {<span class="va">i</span>: <span class="va">ch</span> <span class="kw">for</span> <span class="va">ch</span>, <span class="va">i</span> <span class="kw">in</span> <span class="va">char_to_id</span>.<span class="fn">items</span>()}
+
+<span class="cm"># Special token: Beginning (and End) of Sequence</span>
+<span class="va">BOS_TOKEN_ID</span>: <span class="cl">int</span> = <span class="fn">len</span>(<span class="va">unique_chars</span>)
+<span class="va">VOCAB_SIZE</span>:   <span class="cl">int</span> = <span class="fn">len</span>(<span class="va">unique_chars</span>) + <span class="nu">1</span>  <span class="cm"># all chars + BOS</span>
+
+<span class="kw">def</span> <span class="fn">encode</span>(<span class="va">text</span>: <span class="cl">str</span>) -> <span class="cl">list</span>[<span class="cl">int</span>]:
+    <span class="st">"""Convert a string to a list of token IDs, framed by BOS."""</span>
+    <span class="kw">return</span> [<span class="va">BOS_TOKEN_ID</span>] + [<span class="va">char_to_id</span>[<span class="va">ch</span>] <span class="kw">for</span> <span class="va">ch</span> <span class="kw">in</span> <span class="va">text</span>] + [<span class="va">BOS_TOKEN_ID</span>]
+
+<span class="kw">def</span> <span class="fn">decode</span>(<span class="va">token_ids</span>: <span class="cl">list</span>[<span class="cl">int</span>]) -> <span class="cl">str</span>:
+    <span class="st">"""Convert token IDs back to a string, ignoring BOS tokens."""</span>
+    <span class="kw">return</span> <span class="st">""</span>.<span class="fn">join</span>(<span class="va">id_to_char</span>[<span class="va">tid</span>] <span class="kw">for</span> <span class="va">tid</span> <span class="kw">in</span> <span class="va">token_ids</span> <span class="kw">if</span> <span class="va">tid</span> != <span class="va">BOS_TOKEN_ID</span>)
+
+<span class="fn">print</span>(<span class="st">f"Vocabulary size: </span>{<span class="va">VOCAB_SIZE</span>}<span class="st"> (</span>{<span class="fn">len</span>(<span class="va">unique_chars</span>)}<span class="st"> chars + BOS)"</span>)</code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Design choice: BOS = EOS</div>
+  Using a single special token for both beginning and end is a common simplification. The model can infer its role from context: at position 0, BOS means "start generating." When the model <em>predicts</em> BOS, it means "I'm done." This works because the two contexts are unambiguous — BOS only appears at the start of the input and at the end of the target.
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §3  AUTOGRAD                                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s3">
+<h2><span class="section-num">§3</span> Autograd — Backpropagation from Scratch</h2>
+
+<p>
+This is the beating heart of the file: a <strong>scalar-valued automatic differentiation engine</strong>. Every number in our computation — every weight, every activation, every intermediate result — will be wrapped in a <code>Value</code> object that knows two things: its numerical value (the <em>forward pass</em>), and eventually, the derivative of the final loss with respect to itself (the <em>backward pass</em>).
+</p>
+
+<p>
+The idea is simple but profound. Any computation, no matter how complex, is a sequence of elementary operations: add, multiply, exponentiate, and so on. If we know the derivative of each elementary operation with respect to its inputs (the <em>local gradients</em>), we can chain them together using the <strong>chain rule</strong> to find the derivative of the final output with respect to <em>any</em> input. This is <strong>backpropagation</strong>.
+</p>
+
+<div class="math-box">
+  <div class="math-label">The Chain Rule</div>
+  If <span class="math">L = f(g(x))</span>, then
+  <span class="math">&nbsp; dL/dx = (dL/df) · (df/dg) · (dg/dx)</span>
+  <br>
+  Each node stores <span class="math">df/dg</span> (its local gradient) and receives <span class="math">dL/df</span> from its parent.
+  <br>
+  We propagate gradients backward through the graph, accumulating <span class="math">dL/dx</span> for every node <span class="math">x</span>.
+</div>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Autograd Engine — The Value Class</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">class</span> <span class="cl">Value</span>:
+    <span class="va">__slots__</span> = (<span class="st">'data'</span>, <span class="st">'grad'</span>, <span class="st">'_children'</span>, <span class="st">'_local_grads'</span>)
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="va">self</span>, <span class="va">data</span>, <span class="va">children</span>=(), <span class="va">local_grads</span>=()):
+        <span class="va">self</span>.<span class="va">data</span> = <span class="va">data</span>
+        <span class="va">self</span>.<span class="va">grad</span> = <span class="nu">0</span>
+        <span class="va">self</span>.<span class="va">_children</span> = <span class="va">children</span>
+        <span class="va">self</span>.<span class="va">_local_grads</span> = <span class="va">local_grads</span>
+
+    <span class="kw">def</span> <span class="fn">__add__</span>(<span class="va">self</span>, <span class="va">other</span>):
+        <span class="va">other</span> = <span class="va">other</span> <span class="kw">if</span> <span class="fn">isinstance</span>(<span class="va">other</span>, <span class="cl">Value</span>) <span class="kw">else</span> <span class="cl">Value</span>(<span class="va">other</span>)
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">self</span>.<span class="va">data</span> + <span class="va">other</span>.<span class="va">data</span>, (<span class="va">self</span>, <span class="va">other</span>), (<span class="nu">1</span>, <span class="nu">1</span>))
+
+    <span class="kw">def</span> <span class="fn">__mul__</span>(<span class="va">self</span>, <span class="va">other</span>):
+        <span class="va">other</span> = <span class="va">other</span> <span class="kw">if</span> <span class="fn">isinstance</span>(<span class="va">other</span>, <span class="cl">Value</span>) <span class="kw">else</span> <span class="cl">Value</span>(<span class="va">other</span>)
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">self</span>.<span class="va">data</span> * <span class="va">other</span>.<span class="va">data</span>,
+                     (<span class="va">self</span>, <span class="va">other</span>), (<span class="va">other</span>.<span class="va">data</span>, <span class="va">self</span>.<span class="va">data</span>))
+
+    <span class="kw">def</span> <span class="fn">__pow__</span>(<span class="va">self</span>, <span class="va">other</span>):
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">self</span>.<span class="va">data</span>**<span class="va">other</span>,
+                     (<span class="va">self</span>,), (<span class="va">other</span> * <span class="va">self</span>.<span class="va">data</span>**(<span class="va">other</span>-<span class="nu">1</span>),))
+
+    <span class="kw">def</span> <span class="fn">log</span>(<span class="va">self</span>):
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">math</span>.<span class="fn">log</span>(<span class="va">self</span>.<span class="va">data</span>), (<span class="va">self</span>,), (<span class="nu">1</span>/<span class="va">self</span>.<span class="va">data</span>,))
+
+    <span class="kw">def</span> <span class="fn">exp</span>(<span class="va">self</span>):
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">math</span>.<span class="fn">exp</span>(<span class="va">self</span>.<span class="va">data</span>), (<span class="va">self</span>,), (<span class="va">math</span>.<span class="fn">exp</span>(<span class="va">self</span>.<span class="va">data</span>),))
+
+    <span class="kw">def</span> <span class="fn">relu</span>(<span class="va">self</span>):
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="fn">max</span>(<span class="nu">0</span>, <span class="va">self</span>.<span class="va">data</span>), (<span class="va">self</span>,), (<span class="fn">float</span>(<span class="va">self</span>.<span class="va">data</span> > <span class="nu">0</span>),))
+
+    <span class="cm"># ... convenience operators: __neg__, __sub__, etc. ...</span>
+
+    <span class="kw">def</span> <span class="fn">backward</span>(<span class="va">self</span>):
+        <span class="va">topo</span> = []
+        <span class="va">visited</span> = <span class="fn">set</span>()
+        <span class="kw">def</span> <span class="fn">build_topo</span>(<span class="va">v</span>):
+            <span class="kw">if</span> <span class="va">v</span> <span class="kw">not in</span> <span class="va">visited</span>:
+                <span class="va">visited</span>.<span class="fn">add</span>(<span class="va">v</span>)
+                <span class="kw">for</span> <span class="va">child</span> <span class="kw">in</span> <span class="va">v</span>.<span class="va">_children</span>:
+                    <span class="fn">build_topo</span>(<span class="va">child</span>)
+                <span class="va">topo</span>.<span class="fn">append</span>(<span class="va">v</span>)
+        <span class="fn">build_topo</span>(<span class="va">self</span>)
+        <span class="va">self</span>.<span class="va">grad</span> = <span class="nu">1</span>
+        <span class="kw">for</span> <span class="va">v</span> <span class="kw">in</span> <span class="fn">reversed</span>(<span class="va">topo</span>):
+            <span class="kw">for</span> <span class="va">child</span>, <span class="va">local_grad</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">v</span>.<span class="va">_children</span>, <span class="va">v</span>.<span class="va">_local_grads</span>):
+                <span class="va">child</span>.<span class="va">grad</span> += <span class="va">local_grad</span> * <span class="va">v</span>.<span class="va">grad</span></code></pre>
+</div>
+
+<h3>Anatomy of a Value Node</h3>
+
+<p>
+Every <code>Value</code> stores four things:
+</p>
+
+<ul class="prose-list">
+  <li><code>data</code> — the actual floating-point number computed during the forward pass.</li>
+  <li><code>grad</code> — the gradient ∂Loss/∂(this value), computed during the backward pass. Initialized to 0 and accumulated during backprop.</li>
+  <li><code>_children</code> — a tuple of <code>Value</code> objects that were the inputs to the operation that created this node. This defines the edges of the computation graph.</li>
+  <li><code>_local_grads</code> — a tuple of scalars, one per child, representing the partial derivative of this node's output with respect to each child's value. These are computed eagerly during the forward pass.</li>
+</ul>
+
+<p>
+The <code>__slots__</code> declaration is a Python memory optimization — it tells Python not to create a <code>__dict__</code> for each instance, which matters when you have millions of <code>Value</code> objects in a computation graph.
+</p>
+
+<h3>The Elementary Operations</h3>
+
+<p>
+Each operation computes two things: the output value (forward), and the local gradients (for use in the backward pass). Let's verify each one:
+</p>
+
+<div class="math-box">
+  <div class="math-label">Local Gradients for Each Operation</div>
+  <strong>Addition:</strong> <span class="math">z = a + b</span> &nbsp;→&nbsp; <span class="math">∂z/∂a = 1, &nbsp; ∂z/∂b = 1</span><br>
+  <strong>Multiplication:</strong> <span class="math">z = a · b</span> &nbsp;→&nbsp; <span class="math">∂z/∂a = b, &nbsp; ∂z/∂b = a</span><br>
+  <strong>Power:</strong> <span class="math">z = a<sup>n</sup></span> &nbsp;→&nbsp; <span class="math">∂z/∂a = n · a<sup>n−1</sup></span><br>
+  <strong>Log:</strong> <span class="math">z = ln(a)</span> &nbsp;→&nbsp; <span class="math">∂z/∂a = 1/a</span><br>
+  <strong>Exp:</strong> <span class="math">z = e<sup>a</sup></span> &nbsp;→&nbsp; <span class="math">∂z/∂a = e<sup>a</sup></span><br>
+  <strong>ReLU:</strong> <span class="math">z = max(0, a)</span> &nbsp;→&nbsp; <span class="math">∂z/∂a = 1 if a > 0, else 0</span>
+</div>
+
+<p>
+Notice the elegant trick for <strong>multiplication</strong>: the gradient of the product with respect to one factor is the <em>other</em> factor. This is the basic product rule from calculus: <span class="math">d(ab)/da = b</span>.
+</p>
+
+<p>
+The remaining operators (<code>__neg__</code>, <code>__sub__</code>, <code>__truediv__</code>, etc.) are all defined in terms of add, mul, and pow — so they don't need their own gradient rules. For example, <code>a - b</code> becomes <code>a + (-1 * b)</code>, and <code>a / b</code> becomes <code>a * b**(-1)</code>. The chain rule handles the composition automatically.
+</p>
+
+<h3>The Backward Pass</h3>
+
+<p>
+The <code>backward()</code> method is where the magic happens. It needs to send gradients from the loss node back to every parameter node, respecting the dependency order of the graph. If node C depends on nodes A and B, we must compute C's gradient <em>before</em> propagating to A and B — otherwise A and B might receive only a partial gradient.
+</p>
+
+<p>
+The solution is a <strong>topological sort</strong>: order the nodes so that every node appears after all of its children. Then we iterate in <em>reverse</em> topological order (from the loss backward to the inputs), and at each node, we push its gradient to its children, scaled by the local gradient.
+</p>
+
+<p>
+The topological sort is implemented as a post-order depth-first search. A node is appended to the list only <em>after</em> all its children have been visited. This guarantees the required ordering.
+</p>
+
+<div class="diagram">
+<pre>
+     Computation Graph (forward direction →)
+
+     w ──┐
+          ├── [*] ── z ──┐
+     x ──┘                ├── [+] ── loss
+                   y ────┘
+
+     Backward pass (← reverse topological order):
+
+     loss.grad = 1                         (seed)
+     z.grad += 1 * loss.grad = 1           (∂loss/∂z via addition)
+     y.grad += 1 * loss.grad = 1           (∂loss/∂y via addition)
+     w.grad += x.data * z.grad             (∂loss/∂w via multiplication)
+     x.grad += w.data * z.grad             (∂loss/∂x via multiplication)
+</pre>
+<div class="caption">Figure 2: Gradient flow through a simple computation graph. Each node pushes its grad ← to children.</div>
+</div>
+
+<p>
+A subtle but critical detail: gradients are <em>accumulated</em> with <code>+=</code>, not assigned with <code>=</code>. This is because a single node might be used in multiple places (e.g., the same weight participates in many computations). Each usage contributes a gradient, and they must all be summed — this is a direct consequence of the multivariate chain rule.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Autograd Engine</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="kw">class</span> <span class="cl">Value</span>:
+    <span class="st">"""
+    A scalar value that tracks its computation graph for automatic
+    differentiation. Supports forward evaluation and reverse-mode
+    gradient computation (backpropagation).
+    """</span>
+    <span class="va">__slots__</span> = (<span class="st">"data"</span>, <span class="st">"grad"</span>, <span class="st">"_children"</span>, <span class="st">"_local_grads"</span>)
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(
+        <span class="va">self</span>,
+        <span class="va">data</span>: <span class="cl">float</span>,
+        <span class="va">children</span>: <span class="cl">tuple</span> = (),
+        <span class="va">local_grads</span>: <span class="cl">tuple</span> = (),
+    ):
+        <span class="va">self</span>.<span class="va">data</span> = <span class="va">data</span>               <span class="cm"># forward-pass value</span>
+        <span class="va">self</span>.<span class="va">grad</span> = <span class="nu">0.0</span>               <span class="cm"># ∂Loss/∂self, filled by backward()</span>
+        <span class="va">self</span>.<span class="va">_children</span> = <span class="va">children</span>     <span class="cm"># input nodes to this op</span>
+        <span class="va">self</span>.<span class="va">_local_grads</span> = <span class="va">local_grads</span>  <span class="cm"># ∂self/∂child for each child</span>
+
+    <span class="cm"># ── Arithmetic operations (forward + local gradient) ─────</span>
+
+    <span class="kw">def</span> <span class="fn">__add__</span>(<span class="va">self</span>, <span class="va">other</span>):
+        <span class="st">"""z = a + b  →  ∂z/∂a = 1, ∂z/∂b = 1"""</span>
+        <span class="va">other</span> = <span class="va">other</span> <span class="kw">if</span> <span class="fn">isinstance</span>(<span class="va">other</span>, <span class="cl">Value</span>) <span class="kw">else</span> <span class="cl">Value</span>(<span class="va">other</span>)
+        <span class="kw">return</span> <span class="cl">Value</span>(
+            <span class="va">data</span>=<span class="va">self</span>.<span class="va">data</span> + <span class="va">other</span>.<span class="va">data</span>,
+            <span class="va">children</span>=(<span class="va">self</span>, <span class="va">other</span>),
+            <span class="va">local_grads</span>=(<span class="nu">1.0</span>, <span class="nu">1.0</span>),
+        )
+
+    <span class="kw">def</span> <span class="fn">__mul__</span>(<span class="va">self</span>, <span class="va">other</span>):
+        <span class="st">"""z = a * b  →  ∂z/∂a = b, ∂z/∂b = a"""</span>
+        <span class="va">other</span> = <span class="va">other</span> <span class="kw">if</span> <span class="fn">isinstance</span>(<span class="va">other</span>, <span class="cl">Value</span>) <span class="kw">else</span> <span class="cl">Value</span>(<span class="va">other</span>)
+        <span class="kw">return</span> <span class="cl">Value</span>(
+            <span class="va">data</span>=<span class="va">self</span>.<span class="va">data</span> * <span class="va">other</span>.<span class="va">data</span>,
+            <span class="va">children</span>=(<span class="va">self</span>, <span class="va">other</span>),
+            <span class="va">local_grads</span>=(<span class="va">other</span>.<span class="va">data</span>, <span class="va">self</span>.<span class="va">data</span>),
+        )
+
+    <span class="kw">def</span> <span class="fn">__pow__</span>(<span class="va">self</span>, <span class="va">exponent</span>: <span class="cl">float</span>):
+        <span class="st">"""z = a^n  →  ∂z/∂a = n * a^(n-1)"""</span>
+        <span class="kw">return</span> <span class="cl">Value</span>(
+            <span class="va">data</span>=<span class="va">self</span>.<span class="va">data</span> ** <span class="va">exponent</span>,
+            <span class="va">children</span>=(<span class="va">self</span>,),
+            <span class="va">local_grads</span>=(<span class="va">exponent</span> * <span class="va">self</span>.<span class="va">data</span> ** (<span class="va">exponent</span> - <span class="nu">1</span>),),
+        )
+
+    <span class="kw">def</span> <span class="fn">log</span>(<span class="va">self</span>):
+        <span class="st">"""z = ln(a)  →  ∂z/∂a = 1/a"""</span>
+        <span class="kw">return</span> <span class="cl">Value</span>(
+            <span class="va">data</span>=<span class="va">math</span>.<span class="fn">log</span>(<span class="va">self</span>.<span class="va">data</span>),
+            <span class="va">children</span>=(<span class="va">self</span>,),
+            <span class="va">local_grads</span>=(<span class="nu">1.0</span> / <span class="va">self</span>.<span class="va">data</span>,),
+        )
+
+    <span class="kw">def</span> <span class="fn">exp</span>(<span class="va">self</span>):
+        <span class="st">"""z = e^a  →  ∂z/∂a = e^a  (the only function equal to its derivative!)"""</span>
+        <span class="va">out</span> = <span class="va">math</span>.<span class="fn">exp</span>(<span class="va">self</span>.<span class="va">data</span>)
+        <span class="kw">return</span> <span class="cl">Value</span>(<span class="va">data</span>=<span class="va">out</span>, <span class="va">children</span>=(<span class="va">self</span>,), <span class="va">local_grads</span>=(<span class="va">out</span>,))
+
+    <span class="kw">def</span> <span class="fn">relu</span>(<span class="va">self</span>):
+        <span class="st">"""z = max(0, a)  →  ∂z/∂a = 1 if a > 0 else 0"""</span>
+        <span class="va">active</span> = <span class="va">self</span>.<span class="va">data</span> > <span class="nu">0</span>
+        <span class="kw">return</span> <span class="cl">Value</span>(
+            <span class="va">data</span>=<span class="va">self</span>.<span class="va">data</span> <span class="kw">if</span> <span class="va">active</span> <span class="kw">else</span> <span class="nu">0.0</span>,
+            <span class="va">children</span>=(<span class="va">self</span>,),
+            <span class="va">local_grads</span>=(<span class="nu">1.0</span> <span class="kw">if</span> <span class="va">active</span> <span class="kw">else</span> <span class="nu">0.0</span>,),
+        )
+
+    <span class="cm"># ── Convenience operators (defined in terms of the above) ─</span>
+    <span class="kw">def</span> <span class="fn">__neg__</span>(<span class="va">self</span>):       <span class="kw">return</span> <span class="va">self</span> * <span class="nu">-1</span>
+    <span class="kw">def</span> <span class="fn">__radd__</span>(<span class="va">self</span>, <span class="va">o</span>): <span class="kw">return</span> <span class="va">self</span> + <span class="va">o</span>
+    <span class="kw">def</span> <span class="fn">__sub__</span>(<span class="va">self</span>, <span class="va">o</span>):  <span class="kw">return</span> <span class="va">self</span> + (-<span class="va">o</span>)
+    <span class="kw">def</span> <span class="fn">__rsub__</span>(<span class="va">self</span>, <span class="va">o</span>): <span class="kw">return</span> <span class="va">o</span> + (-<span class="va">self</span>)
+    <span class="kw">def</span> <span class="fn">__rmul__</span>(<span class="va">self</span>, <span class="va">o</span>): <span class="kw">return</span> <span class="va">self</span> * <span class="va">o</span>
+    <span class="kw">def</span> <span class="fn">__truediv__</span>(<span class="va">self</span>, <span class="va">o</span>):  <span class="kw">return</span> <span class="va">self</span> * <span class="va">o</span> ** <span class="nu">-1</span>
+    <span class="kw">def</span> <span class="fn">__rtruediv__</span>(<span class="va">self</span>, <span class="va">o</span>): <span class="kw">return</span> <span class="va">o</span> * <span class="va">self</span> ** <span class="nu">-1</span>
+
+    <span class="cm"># ── Backward pass: reverse-mode automatic differentiation ─</span>
+    <span class="kw">def</span> <span class="fn">backward</span>(<span class="va">self</span>):
+        <span class="st">"""
+        Compute gradients for all nodes in the computation graph
+        via reverse-mode autodiff (backpropagation).
+
+        Must be called on the loss node (the final scalar output).
+        """</span>
+        <span class="cm"># Step 1: Topological sort via post-order DFS</span>
+        <span class="va">topo_order</span>: <span class="cl">list</span>[<span class="cl">Value</span>] = []
+        <span class="va">visited</span>: <span class="cl">set</span>[<span class="cl">int</span>] = <span class="fn">set</span>()
+
+        <span class="kw">def</span> <span class="fn">_topo_dfs</span>(<span class="va">node</span>: <span class="cl">Value</span>):
+            <span class="kw">if</span> <span class="fn">id</span>(<span class="va">node</span>) <span class="kw">not in</span> <span class="va">visited</span>:
+                <span class="va">visited</span>.<span class="fn">add</span>(<span class="fn">id</span>(<span class="va">node</span>))
+                <span class="kw">for</span> <span class="va">child</span> <span class="kw">in</span> <span class="va">node</span>.<span class="va">_children</span>:
+                    <span class="fn">_topo_dfs</span>(<span class="va">child</span>)
+                <span class="va">topo_order</span>.<span class="fn">append</span>(<span class="va">node</span>)
+
+        <span class="fn">_topo_dfs</span>(<span class="va">self</span>)
+
+        <span class="cm"># Step 2: Seed the loss gradient and propagate backward</span>
+        <span class="va">self</span>.<span class="va">grad</span> = <span class="nu">1.0</span>  <span class="cm"># ∂loss/∂loss = 1</span>
+        <span class="kw">for</span> <span class="va">node</span> <span class="kw">in</span> <span class="fn">reversed</span>(<span class="va">topo_order</span>):
+            <span class="kw">for</span> <span class="va">child</span>, <span class="va">local_grad</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">node</span>.<span class="va">_children</span>, <span class="va">node</span>.<span class="va">_local_grads</span>):
+                <span class="cm"># Chain rule: ∂L/∂child += (∂L/∂node) * (∂node/∂child)</span>
+                <span class="va">child</span>.<span class="va">grad</span> += <span class="va">local_grad</span> * <span class="va">node</span>.<span class="va">grad</span>
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(<span class="va">self</span>):
+        <span class="kw">return</span> <span class="st">f"Value(data=</span>{<span class="va">self</span>.<span class="va">data</span>:<span class="st">.4f</span>}<span class="st">, grad=</span>{<span class="va">self</span>.<span class="va">grad</span>:<span class="st">.4f</span>}<span class="st">)"</span></code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Why this is slow (and why that's okay)</div>
+  This autograd engine tracks every single scalar operation. A single matrix multiply of a 16×16 matrix creates 16 × 16 × 16 = 4,096 multiply-and-accumulate <code>Value</code> nodes. PyTorch avoids this by operating on entire tensors at once, delegating to optimized C++/CUDA kernels. But the <em>principle</em> is identical. This code is slow by a factor of thousands — but it is maximally transparent.
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §4  PARAMETERS                                            -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s4">
+<h2><span class="section-num">§4</span> Parameters — Initializing the Model's Knowledge</h2>
+
+<p>
+Before the model can learn anything, we must allocate its parameters — the numbers that will be tuned during training. Every weight matrix starts as a random matrix of <code>Value</code> objects, sampled from a Gaussian distribution with mean 0 and standard deviation 0.08. This is the model's "blank slate": structured noise that training will sculpt into useful patterns.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Hyperparameters & Parameter Initialization</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="va">n_embd</span> = <span class="nu">16</span>       <span class="cm"># embedding dimension</span>
+<span class="va">n_head</span> = <span class="nu">4</span>        <span class="cm"># number of attention heads</span>
+<span class="va">n_layer</span> = <span class="nu">1</span>       <span class="cm"># number of layers</span>
+<span class="va">block_size</span> = <span class="nu">16</span>   <span class="cm"># maximum sequence length</span>
+<span class="va">head_dim</span> = <span class="va">n_embd</span> // <span class="va">n_head</span>
+
+<span class="va">matrix</span> = <span class="kw">lambda</span> <span class="va">nout</span>, <span class="va">nin</span>, <span class="va">std</span>=<span class="nu">0.08</span>: [
+    [<span class="cl">Value</span>(<span class="va">random</span>.<span class="fn">gauss</span>(<span class="nu">0</span>, <span class="va">std</span>)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">nin</span>)]
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">nout</span>)
+]
+
+<span class="va">state_dict</span> = {
+    <span class="st">'wte'</span>:     <span class="fn">matrix</span>(<span class="va">vocab_size</span>, <span class="va">n_embd</span>),
+    <span class="st">'wpe'</span>:     <span class="fn">matrix</span>(<span class="va">block_size</span>, <span class="va">n_embd</span>),
+    <span class="st">'lm_head'</span>: <span class="fn">matrix</span>(<span class="va">vocab_size</span>, <span class="va">n_embd</span>),
+}
+<span class="kw">for</span> <span class="va">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>):
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.attn_wq'</span>] = <span class="fn">matrix</span>(<span class="va">n_embd</span>, <span class="va">n_embd</span>)
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.attn_wk'</span>] = <span class="fn">matrix</span>(<span class="va">n_embd</span>, <span class="va">n_embd</span>)
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.attn_wv'</span>] = <span class="fn">matrix</span>(<span class="va">n_embd</span>, <span class="va">n_embd</span>)
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.attn_wo'</span>] = <span class="fn">matrix</span>(<span class="va">n_embd</span>, <span class="va">n_embd</span>)
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.mlp_fc1'</span>] = <span class="fn">matrix</span>(<span class="nu">4</span> * <span class="va">n_embd</span>, <span class="va">n_embd</span>)
+    <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">i</span>}<span class="st">.mlp_fc2'</span>] = <span class="fn">matrix</span>(<span class="va">n_embd</span>, <span class="nu">4</span> * <span class="va">n_embd</span>)
+
+<span class="va">params</span> = [<span class="va">p</span> <span class="kw">for</span> <span class="va">mat</span> <span class="kw">in</span> <span class="va">state_dict</span>.<span class="fn">values</span>()
+          <span class="kw">for</span> <span class="va">row</span> <span class="kw">in</span> <span class="va">mat</span>
+          <span class="kw">for</span> <span class="va">p</span> <span class="kw">in</span> <span class="va">row</span>]</code></pre>
+</div>
+
+<h3>The Hyperparameters</h3>
+
+<p>
+These are deliberately tiny — this is a teaching model, not a production one:
+</p>
+
+<ul class="prose-list">
+  <li><code>n_embd = 16</code> — Each token is represented as a 16-dimensional vector. GPT-2 Small uses 768; GPT-3 uses 12,288. The embedding dimension is the "width" of the model — it determines how much information each token's representation can carry.</li>
+  <li><code>n_head = 4</code> — The attention mechanism is split into 4 independent "heads," each operating on a 4-dimensional subspace (16 / 4 = 4). Multiple heads allow the model to attend to different types of relationships simultaneously.</li>
+  <li><code>n_layer = 1</code> — A single Transformer block. GPT-2 uses 12–48 layers. Depth allows the model to build increasingly abstract representations.</li>
+  <li><code>block_size = 16</code> — The maximum sequence length. Names are short, so 16 characters is sufficient.</li>
+</ul>
+
+<h3>The Weight Matrices</h3>
+
+<p>
+The <code>state_dict</code> is a dictionary mapping parameter names to 2D lists of <code>Value</code> objects (matrices). The naming convention mirrors PyTorch's <code>state_dict()</code>. Here's what each parameter does:
+</p>
+
+<ul class="prose-list">
+  <li><strong><code>wte</code></strong> (word token embeddings) — Shape <code>[vocab_size, n_embd]</code>. Row <em>i</em> is the learned embedding vector for token <em>i</em>. This is a lookup table: given token ID 4, we fetch row 4.</li>
+  <li><strong><code>wpe</code></strong> (word position embeddings) — Shape <code>[block_size, n_embd]</code>. Row <em>j</em> is the learned embedding for position <em>j</em>. This gives the model a sense of order — without it, the Transformer treats its input as a bag of tokens.</li>
+  <li><strong><code>lm_head</code></strong> (language model head) — Shape <code>[vocab_size, n_embd]</code>. Projects the final hidden state back to vocabulary-sized logits for prediction.</li>
+  <li><strong>Per-layer attention weights</strong> — <code>attn_wq</code>, <code>attn_wk</code>, <code>attn_wv</code>, <code>attn_wo</code>: four <code>[n_embd, n_embd]</code> matrices for queries, keys, values, and output projection.</li>
+  <li><strong>Per-layer MLP weights</strong> — <code>mlp_fc1</code>: <code>[4·n_embd, n_embd]</code> (expand), <code>mlp_fc2</code>: <code>[n_embd, 4·n_embd]</code> (contract). The MLP projects to 4× the width and back — this "bottleneck" pattern is standard in Transformers.</li>
+</ul>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Hyperparameters & Parameter Initialization</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># ── Model hyperparameters ─────────────────────────────────</span>
+<span class="va">N_EMBED</span>:    <span class="cl">int</span> = <span class="nu">16</span>    <span class="cm"># embedding dimension (model "width")</span>
+<span class="va">N_HEADS</span>:    <span class="cl">int</span> = <span class="nu">4</span>     <span class="cm"># number of attention heads</span>
+<span class="va">N_LAYERS</span>:   <span class="cl">int</span> = <span class="nu">1</span>     <span class="cm"># number of Transformer blocks (model "depth")</span>
+<span class="va">BLOCK_SIZE</span>: <span class="cl">int</span> = <span class="nu">16</span>    <span class="cm"># maximum sequence length</span>
+<span class="va">HEAD_DIM</span>:   <span class="cl">int</span> = <span class="va">N_EMBED</span> // <span class="va">N_HEADS</span>  <span class="cm"># = 4, dimension per head</span>
+<span class="va">MLP_DIM</span>:    <span class="cl">int</span> = <span class="nu">4</span> * <span class="va">N_EMBED</span>          <span class="cm"># = 64, MLP hidden dimension</span>
+<span class="va">INIT_STD</span>: <span class="cl">float</span> = <span class="nu">0.08</span>  <span class="cm"># std dev for weight initialization</span>
+
+
+<span class="kw">def</span> <span class="fn">random_matrix</span>(
+    <span class="va">n_rows</span>: <span class="cl">int</span>,
+    <span class="va">n_cols</span>: <span class="cl">int</span>,
+    <span class="va">std</span>: <span class="cl">float</span> = <span class="va">INIT_STD</span>,
+) -> <span class="cl">list</span>[<span class="cl">list</span>[<span class="cl">Value</span>]]:
+    <span class="st">"""Create a matrix of Value nodes, sampled from N(0, std)."""</span>
+    <span class="kw">return</span> [
+        [<span class="cl">Value</span>(<span class="va">random</span>.<span class="fn">gauss</span>(<span class="nu">0</span>, <span class="va">std</span>)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_cols</span>)]
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_rows</span>)
+    ]
+
+
+<span class="cm"># ── Initialize all model parameters ───────────────────────</span>
+<span class="va">state_dict</span>: <span class="cl">dict</span>[<span class="cl">str</span>, <span class="cl">list</span>[<span class="cl">list</span>[<span class="cl">Value</span>]]] = {
+    <span class="cm"># Embedding tables</span>
+    <span class="st">"wte"</span>:     <span class="fn">random_matrix</span>(<span class="va">VOCAB_SIZE</span>, <span class="va">N_EMBED</span>),   <span class="cm"># token embeddings</span>
+    <span class="st">"wpe"</span>:     <span class="fn">random_matrix</span>(<span class="va">BLOCK_SIZE</span>, <span class="va">N_EMBED</span>),   <span class="cm"># position embeddings</span>
+    <span class="cm"># Output projection</span>
+    <span class="st">"lm_head"</span>: <span class="fn">random_matrix</span>(<span class="va">VOCAB_SIZE</span>, <span class="va">N_EMBED</span>),   <span class="cm"># logit projection</span>
+}
+
+<span class="kw">for</span> <span class="va">layer_idx</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>):
+    <span class="va">prefix</span> = <span class="st">f"layer</span>{<span class="va">layer_idx</span>}<span class="st">"</span>
+    <span class="cm"># Attention: Q, K, V projections + output projection</span>
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wq"</span>] = <span class="fn">random_matrix</span>(<span class="va">N_EMBED</span>, <span class="va">N_EMBED</span>)
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wk"</span>] = <span class="fn">random_matrix</span>(<span class="va">N_EMBED</span>, <span class="va">N_EMBED</span>)
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wv"</span>] = <span class="fn">random_matrix</span>(<span class="va">N_EMBED</span>, <span class="va">N_EMBED</span>)
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wo"</span>] = <span class="fn">random_matrix</span>(<span class="va">N_EMBED</span>, <span class="va">N_EMBED</span>)
+    <span class="cm"># MLP: expand to 4× then contract back</span>
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.mlp_fc1"</span>] = <span class="fn">random_matrix</span>(<span class="va">MLP_DIM</span>, <span class="va">N_EMBED</span>)
+    <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.mlp_fc2"</span>] = <span class="fn">random_matrix</span>(<span class="va">N_EMBED</span>, <span class="va">MLP_DIM</span>)
+
+<span class="cm"># Flatten into a single list for the optimizer</span>
+<span class="va">all_parameters</span>: <span class="cl">list</span>[<span class="cl">Value</span>] = [
+    <span class="va">param</span>
+    <span class="kw">for</span> <span class="va">weight_matrix</span> <span class="kw">in</span> <span class="va">state_dict</span>.<span class="fn">values</span>()
+    <span class="kw">for</span> <span class="va">row</span> <span class="kw">in</span> <span class="va">weight_matrix</span>
+    <span class="kw">for</span> <span class="va">param</span> <span class="kw">in</span> <span class="va">row</span>
+]
+<span class="fn">print</span>(<span class="st">f"Total parameters: </span>{<span class="fn">len</span>(<span class="va">all_parameters</span>):<span class="st">,</span>}<span class="st">"</span>)</code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Parameter count</div>
+  With these settings, the model has roughly 7,000 parameters. GPT-2 Small has 124 million. GPT-3 has 175 billion. The architecture is the same — the difference is purely one of scale (wider embeddings, more layers, more heads, longer sequences, larger vocabulary).
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §5  BUILDING BLOCKS                                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s5">
+<h2><span class="section-num">§5</span> Building Blocks — Linear, Softmax, RMSNorm</h2>
+
+<p>
+Before we can assemble the full GPT, we need three fundamental primitives: the linear transformation, the softmax function, and RMS normalization. These are the Lego bricks from which the entire architecture is built.
+</p>
+
+<h3>Linear Transformation</h3>
+
+<p>
+The linear layer is the workhorse of neural networks. Given an input vector <strong>x</strong> and a weight matrix <strong>W</strong>, it computes <strong>y</strong> = <strong>Wx</strong> — a matrix-vector multiplication. Each output element is a dot product between one row of the weight matrix and the input vector.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Linear Layer</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">def</span> <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">w</span>):
+    <span class="kw">return</span> [<span class="fn">sum</span>(<span class="va">wi</span> * <span class="va">xi</span> <span class="kw">for</span> <span class="va">wi</span>, <span class="va">xi</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">wo</span>, <span class="va">x</span>)) <span class="kw">for</span> <span class="va">wo</span> <span class="kw">in</span> <span class="va">w</span>]</code></pre>
+</div>
+
+<div class="math-box">
+  <div class="math-label">Linear Transformation</div>
+  <span class="math">y<sub>i</sub> = Σ<sub>j</sub> W<sub>ij</sub> · x<sub>j</sub></span> &nbsp;&nbsp; for each output dimension <span class="math">i</span>
+  <br><br>
+  This is a standard matrix-vector product: <span class="math"><strong>y</strong> = <strong>W</strong> · <strong>x</strong></span>
+</div>
+
+<p>
+The compact list comprehension unpacks as: for each row <code>wo</code> in the weight matrix, compute the dot product of that row with the input vector <code>x</code>. The result is a list of <code>Value</code> objects — fully connected to the computation graph for backpropagation.
+</p>
+
+<h3>Softmax</h3>
+
+<p>
+Softmax converts a vector of arbitrary real numbers (logits) into a probability distribution: all values become positive and sum to 1. It's used in two places: computing attention weights (how much each position attends to every other) and computing the final token probabilities for loss calculation and sampling.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Softmax</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">def</span> <span class="fn">softmax</span>(<span class="va">logits</span>):
+    <span class="va">max_val</span> = <span class="fn">max</span>(<span class="va">val</span>.<span class="va">data</span> <span class="kw">for</span> <span class="va">val</span> <span class="kw">in</span> <span class="va">logits</span>)
+    <span class="va">exps</span> = [(<span class="va">val</span> - <span class="va">max_val</span>).<span class="fn">exp</span>() <span class="kw">for</span> <span class="va">val</span> <span class="kw">in</span> <span class="va">logits</span>]
+    <span class="va">total</span> = <span class="fn">sum</span>(<span class="va">exps</span>)
+    <span class="kw">return</span> [<span class="va">e</span> / <span class="va">total</span> <span class="kw">for</span> <span class="va">e</span> <span class="kw">in</span> <span class="va">exps</span>]</code></pre>
+</div>
+
+<div class="math-box">
+  <div class="math-label">Softmax with Numerical Stability</div>
+  <span class="math">softmax(z)<sub>i</sub> = exp(z<sub>i</sub> − max(z)) / Σ<sub>j</sub> exp(z<sub>j</sub> − max(z))</span>
+</div>
+
+<p>
+The subtraction of <code>max_val</code> is a crucial numerical stability trick. Without it, large logits would cause <code>exp()</code> to overflow to infinity. Subtracting the maximum ensures the largest exponent is <code>exp(0) = 1</code>, while all others are between 0 and 1. Mathematically this doesn't change the result (the constant cancels in the ratio).
+</p>
+
+<p>
+Note that <code>max_val</code> is extracted as a plain Python float (<code>.data</code>), not a <code>Value</code>. This means the subtraction of <code>max_val</code> is treated as a constant during backpropagation — the gradient flows through the <code>(val - max_val)</code> subtraction as if it were just <code>val - constant</code>. This is correct because the max is a piecewise-constant function of the inputs with derivative zero almost everywhere.
+</p>
+
+<h3>RMS Normalization</h3>
+
+<p>
+Normalization layers stabilize training by preventing activations from growing or shrinking uncontrollably as they flow through the network. <strong>RMSNorm</strong> (Root Mean Square Normalization) is a simplification of the more traditional <strong>LayerNorm</strong>: it scales the vector so that its root-mean-square equals 1, without also centering it to zero mean.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">RMS Normalization</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">def</span> <span class="fn">rmsnorm</span>(<span class="va">x</span>):
+    <span class="va">ms</span> = <span class="fn">sum</span>(<span class="va">xi</span> * <span class="va">xi</span> <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>) / <span class="fn">len</span>(<span class="va">x</span>)
+    <span class="va">scale</span> = (<span class="va">ms</span> + <span class="nu">1e-5</span>) ** <span class="nu">-0.5</span>
+    <span class="kw">return</span> [<span class="va">xi</span> * <span class="va">scale</span> <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>]</code></pre>
+</div>
+
+<div class="math-box">
+  <div class="math-label">RMS Normalization</div>
+  <span class="math">RMSNorm(x)<sub>i</sub> = x<sub>i</sub> / √(mean(x²) + ε)</span>
+  <br><br>
+  where <span class="math">mean(x²) = (1/d) Σ<sub>j</sub> x<sub>j</sub>²</span> and <span class="math">ε = 10<sup>−5</sup></span> prevents division by zero.
+</div>
+
+<p>
+The <code>1e-5</code> epsilon is a safety net: if the vector is all zeros, we'd divide by zero. Adding a tiny constant prevents this without materially affecting the result.
+</p>
+
+<p>
+A notable simplification: standard RMSNorm also has a learned <em>gain</em> parameter (one per dimension) that rescales each element after normalization. This implementation omits it, trading a small amount of expressiveness for fewer parameters and simpler code.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Building Blocks</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># ── Building blocks ───────────────────────────────────────</span>
+
+<span class="kw">def</span> <span class="fn">linear</span>(
+    <span class="va">x</span>: <span class="cl">list</span>[<span class="cl">Value</span>],
+    <span class="va">weight</span>: <span class="cl">list</span>[<span class="cl">list</span>[<span class="cl">Value</span>]],
+) -> <span class="cl">list</span>[<span class="cl">Value</span>]:
+    <span class="st">"""
+    Matrix-vector product: y = W @ x  (no bias).
+
+    Args:
+        x:      input vector  [d_in]
+        weight: weight matrix [d_out, d_in]
+    Returns:
+        output vector [d_out]
+    """</span>
+    <span class="kw">return</span> [
+        <span class="fn">sum</span>(<span class="va">w_ij</span> * <span class="va">x_j</span> <span class="kw">for</span> <span class="va">w_ij</span>, <span class="va">x_j</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">row</span>, <span class="va">x</span>))
+        <span class="kw">for</span> <span class="va">row</span> <span class="kw">in</span> <span class="va">weight</span>
+    ]
+
+
+<span class="kw">def</span> <span class="fn">softmax</span>(<span class="va">logits</span>: <span class="cl">list</span>[<span class="cl">Value</span>]) -> <span class="cl">list</span>[<span class="cl">Value</span>]:
+    <span class="st">"""
+    Numerically stable softmax.
+
+    Converts raw logits to a probability distribution:
+        p_i = exp(z_i - max(z)) / sum_j exp(z_j - max(z))
+
+    The max-subtraction trick prevents overflow in exp().
+    """</span>
+    <span class="cm"># Extract max as a plain float (constant w.r.t. gradients)</span>
+    <span class="va">max_logit</span>: <span class="cl">float</span> = <span class="fn">max</span>(<span class="va">v</span>.<span class="va">data</span> <span class="kw">for</span> <span class="va">v</span> <span class="kw">in</span> <span class="va">logits</span>)
+
+    <span class="cm"># Shift and exponentiate</span>
+    <span class="va">exp_values</span> = [(<span class="va">logit</span> - <span class="va">max_logit</span>).<span class="fn">exp</span>() <span class="kw">for</span> <span class="va">logit</span> <span class="kw">in</span> <span class="va">logits</span>]
+
+    <span class="cm"># Normalize to sum to 1</span>
+    <span class="va">total</span> = <span class="fn">sum</span>(<span class="va">exp_values</span>)
+    <span class="kw">return</span> [<span class="va">ev</span> / <span class="va">total</span> <span class="kw">for</span> <span class="va">ev</span> <span class="kw">in</span> <span class="va">exp_values</span>]
+
+
+<span class="kw">def</span> <span class="fn">rmsnorm</span>(<span class="va">x</span>: <span class="cl">list</span>[<span class="cl">Value</span>]) -> <span class="cl">list</span>[<span class="cl">Value</span>]:
+    <span class="st">"""
+    Root Mean Square normalization (without learned gain).
+
+    Rescales x so that RMS(x) ≈ 1:
+        x_i' = x_i / sqrt(mean(x^2) + eps)
+
+    Simpler alternative to LayerNorm (no mean-centering step).
+    """</span>
+    <span class="va">d</span> = <span class="fn">len</span>(<span class="va">x</span>)
+    <span class="va">mean_sq</span>: <span class="cl">Value</span> = <span class="fn">sum</span>(<span class="va">xi</span> * <span class="va">xi</span> <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>) / <span class="va">d</span>
+    <span class="va">inv_rms</span>: <span class="cl">Value</span> = (<span class="va">mean_sq</span> + <span class="nu">1e-5</span>) ** <span class="nu">-0.5</span>   <span class="cm"># 1 / sqrt(mean_sq + ε)</span>
+    <span class="kw">return</span> [<span class="va">xi</span> * <span class="va">inv_rms</span> <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>]</code></pre>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §6  GPT FORWARD PASS                                      -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s6">
+<h2><span class="section-num">§6</span> The GPT Forward Pass — Attention Is All You Need (Here)</h2>
+
+<p>
+This is the centerpiece of the file. The <code>gpt()</code> function implements a single step of a GPT-2-style Transformer decoder. Given one token and its position, it produces logits (unnormalized probabilities) over the entire vocabulary for what the next token should be. It follows the architecture of the original GPT-2, with minor simplifications.
+</p>
+
+<p>
+Crucially, this is designed for <strong>autoregressive (causal) inference</strong>: it processes one token at a time, using a <strong>KV-cache</strong> to remember the keys and values of all previously seen tokens. This is exactly what production LLMs do during generation — the "prefill" and "decode" phases of modern inference engines.
+</p>
+
+<div class="diagram">
+<pre>
+  ┌─────────────────────────────────────────────────────┐
+  │              GPT Forward Pass (one token)            │
+  │                                                     │
+  │   token_id ──→ [Token Embedding Table] ──→ tok_emb  │
+  │   pos_id   ──→ [Position Embedding Table] ─→ pos_emb│
+  │                        │                            │
+  │                tok_emb + pos_emb                     │
+  │                        │                            │
+  │                    RMSNorm                           │
+  │                        │                            │
+  │           ┌────────────┴────────────┐               │
+  │           │    Transformer Block    │  × N_LAYERS   │
+  │           │                         │               │
+  │           │  ┌── RMSNorm ────────┐  │               │
+  │           │  │  Multi-Head Attn  │  │               │
+  │           │  │  (Q, K, V, Out)   │  │               │
+  │           │  └──────┬────────────┘  │               │
+  │           │      + residual         │               │
+  │           │         │               │               │
+  │           │  ┌── RMSNorm ────────┐  │               │
+  │           │  │  MLP (fc1→ReLU→fc2)│  │               │
+  │           │  └──────┬────────────┘  │               │
+  │           │      + residual         │               │
+  │           └─────────┴───────────────┘               │
+  │                        │                            │
+  │                  [lm_head]                          │
+  │                        │                            │
+  │                     logits                          │
+  └─────────────────────────────────────────────────────┘
+</pre>
+<div class="caption">Figure 3: The full GPT architecture. Each token is processed through embedding, normalization, self-attention with residual connection, an MLP with residual connection, and a final linear projection to vocabulary logits.</div>
+</div>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">GPT Forward Pass</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="kw">def</span> <span class="fn">gpt</span>(<span class="va">token_id</span>, <span class="va">pos_id</span>, <span class="va">keys</span>, <span class="va">values</span>):
+    <span class="va">tok_emb</span> = <span class="va">state_dict</span>[<span class="st">'wte'</span>][<span class="va">token_id</span>]
+    <span class="va">pos_emb</span> = <span class="va">state_dict</span>[<span class="st">'wpe'</span>][<span class="va">pos_id</span>]
+    <span class="va">x</span> = [<span class="va">t</span> + <span class="va">p</span> <span class="kw">for</span> <span class="va">t</span>, <span class="va">p</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">tok_emb</span>, <span class="va">pos_emb</span>)]
+    <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+
+    <span class="kw">for</span> <span class="va">li</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>):
+        <span class="cm"># 1) Multi-head attention block</span>
+        <span class="va">x_residual</span> = <span class="va">x</span>
+        <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+        <span class="va">q</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.attn_wq'</span>])
+        <span class="va">k</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.attn_wk'</span>])
+        <span class="va">v</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.attn_wv'</span>])
+        <span class="va">keys</span>[<span class="va">li</span>].<span class="fn">append</span>(<span class="va">k</span>)
+        <span class="va">values</span>[<span class="va">li</span>].<span class="fn">append</span>(<span class="va">v</span>)
+        <span class="va">x_attn</span> = []
+        <span class="kw">for</span> <span class="va">h</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_head</span>):
+            <span class="va">hs</span> = <span class="va">h</span> * <span class="va">head_dim</span>
+            <span class="va">q_h</span> = <span class="va">q</span>[<span class="va">hs</span>:<span class="va">hs</span>+<span class="va">head_dim</span>]
+            <span class="va">k_h</span> = [<span class="va">ki</span>[<span class="va">hs</span>:<span class="va">hs</span>+<span class="va">head_dim</span>] <span class="kw">for</span> <span class="va">ki</span> <span class="kw">in</span> <span class="va">keys</span>[<span class="va">li</span>]]
+            <span class="va">v_h</span> = [<span class="va">vi</span>[<span class="va">hs</span>:<span class="va">hs</span>+<span class="va">head_dim</span>] <span class="kw">for</span> <span class="va">vi</span> <span class="kw">in</span> <span class="va">values</span>[<span class="va">li</span>]]
+            <span class="va">attn_logits</span> = [
+                <span class="fn">sum</span>(<span class="va">q_h</span>[<span class="va">j</span>] * <span class="va">k_h</span>[<span class="va">t</span>][<span class="va">j</span>] <span class="kw">for</span> <span class="va">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">head_dim</span>)) / <span class="va">head_dim</span>**<span class="nu">0.5</span>
+                <span class="kw">for</span> <span class="va">t</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="va">k_h</span>))
+            ]
+            <span class="va">attn_weights</span> = <span class="fn">softmax</span>(<span class="va">attn_logits</span>)
+            <span class="va">head_out</span> = [
+                <span class="fn">sum</span>(<span class="va">attn_weights</span>[<span class="va">t</span>] * <span class="va">v_h</span>[<span class="va">t</span>][<span class="va">j</span>] <span class="kw">for</span> <span class="va">t</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="va">v_h</span>)))
+                <span class="kw">for</span> <span class="va">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">head_dim</span>)
+            ]
+            <span class="va">x_attn</span>.<span class="fn">extend</span>(<span class="va">head_out</span>)
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">x_attn</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.attn_wo'</span>])
+        <span class="va">x</span> = [<span class="va">a</span> + <span class="va">b</span> <span class="kw">for</span> <span class="va">a</span>, <span class="va">b</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">x</span>, <span class="va">x_residual</span>)]
+        <span class="cm"># 2) MLP block</span>
+        <span class="va">x_residual</span> = <span class="va">x</span>
+        <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.mlp_fc1'</span>])
+        <span class="va">x</span> = [<span class="va">xi</span>.<span class="fn">relu</span>() <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>]
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f'layer</span>{<span class="va">li</span>}<span class="st">.mlp_fc2'</span>])
+        <span class="va">x</span> = [<span class="va">a</span> + <span class="va">b</span> <span class="kw">for</span> <span class="va">a</span>, <span class="va">b</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">x</span>, <span class="va">x_residual</span>)]
+
+    <span class="va">logits</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">'lm_head'</span>])
+    <span class="kw">return</span> <span class="va">logits</span></code></pre>
+</div>
+
+<p>
+Let's walk through this step by step, in detail.
+</p>
+
+<h3>Step 1: Embedding Lookup</h3>
+
+<p>
+The function takes a single <code>token_id</code> (integer) and <code>pos_id</code> (integer). It looks up two vectors: the <strong>token embedding</strong> (what word is this?) and the <strong>position embedding</strong> (where in the sequence is it?). These are added together element-wise to form a single representation that encodes both identity and position.
+</p>
+
+<p>
+This additive approach is the original Transformer design (Vaswani et al., 2017). The intuition is that the model can learn to "read" the position information from the combined vector because the position embeddings occupy a different subspace than the token embeddings — addition in a high-dimensional space is surprisingly non-destructive.
+</p>
+
+<h3>Step 2: Pre-Normalization</h3>
+
+<p>
+The combined embedding is immediately normalized with RMSNorm. This is a "pre-norm" formulation (normalize <em>before</em> each sub-block), as opposed to GPT-2's original "post-norm" (normalize <em>after</em>). Pre-norm architectures are known to train more stably, especially at scale. There's also an initial RMSNorm applied to the combined embedding before entering the Transformer blocks — this normalizes the raw embedding, which is important because the embedding table is randomly initialized and its magnitudes are unconstrained.
+</p>
+
+<h3>Step 3: Multi-Head Self-Attention</h3>
+
+<p>
+Attention is the mechanism that allows each token to "look at" and gather information from all previous tokens. It answers the question: <em>"Given what I am, what information from the past context should I incorporate?"</em>
+</p>
+
+<p>
+The process:
+</p>
+
+<p>
+<strong>3a. Compute Q, K, V.</strong> The normalized hidden state is linearly projected into three vectors: a <strong>query</strong> (Q — "what am I looking for?"), a <strong>key</strong> (K — "what do I contain?"), and a <strong>value</strong> (V — "what information do I carry?"). Each is the full embedding dimension (16).
+</p>
+
+<p>
+<strong>3b. Cache K and V.</strong> The key and value for the current position are appended to running lists (<code>keys</code> and <code>values</code>). This is the <strong>KV-cache</strong>: when processing position 5, we need keys and values from positions 0–5, but we don't want to recompute them. By caching, each new token only requires computing one new Q, K, V triple.
+</p>
+
+<p>
+<strong>3c. Split into heads.</strong> The 16-dimensional Q, K, V vectors are split into <code>n_head = 4</code> independent heads, each operating on a <code>head_dim = 4</code> dimensional subspace. Head 0 uses dimensions 0–3, head 1 uses 4–7, and so on. Each head can learn to attend to different types of relationships (e.g., one head might focus on adjacent characters, another on vowel patterns).
+</p>
+
+<p>
+<strong>3d. Scaled dot-product attention.</strong> For each head, the current query is compared against <em>all</em> cached keys via dot product. The dot product measures similarity: if the query and a key point in the same direction, their product is large. The results are divided by √(<code>head_dim</code>) to prevent the dot products from becoming too large (which would push softmax into a regime where it assigns all mass to one position).
+</p>
+
+<div class="math-box">
+  <div class="math-label">Scaled Dot-Product Attention (per head)</div>
+  <span class="math">attn_logit<sub>t</sub> = (q · k<sub>t</sub>) / √d<sub>head</sub></span><br><br>
+  <span class="math">attn_weight<sub>t</sub> = softmax(attn_logits)<sub>t</sub></span><br><br>
+  <span class="math">output<sub>j</sub> = Σ<sub>t</sub> attn_weight<sub>t</sub> · v<sub>t,j</sub></span>
+</div>
+
+<p>
+<strong>3e. Weighted sum.</strong> The attention weights (now a probability distribution) are used to take a weighted average of all cached value vectors. Positions with higher attention weight contribute more to the output. The result is a <code>head_dim</code>-dimensional vector per head.
+</p>
+
+<p>
+<strong>3f. Concatenate and project.</strong> The outputs of all heads are concatenated back into a full <code>n_embd</code>-dimensional vector, then projected through the output weight matrix <code>attn_wo</code>. This allows the model to mix information across heads.
+</p>
+
+<p>
+<strong>3g. Residual connection.</strong> The attention output is <em>added</em> to the pre-attention hidden state. This is the <strong>residual connection</strong> (or "skip connection") — it creates a direct path for gradients to flow backward through the network without being attenuated by the attention computation. Residual connections are what make deep networks trainable.
+</p>
+
+<h3>Step 4: The MLP Block</h3>
+
+<p>
+After attention has gathered contextual information, the MLP processes each position independently. It's a simple two-layer feedforward network: project up to 4× the embedding dimension (64), apply ReLU activation (zero out negatives), then project back down to the embedding dimension. Another residual connection wraps the whole thing.
+</p>
+
+<p>
+The MLP is where the model does most of its "thinking" — it's a universal function approximator that can learn arbitrary transformations of the attention output. The 4× expansion ratio is a design convention from the original Transformer paper.
+</p>
+
+<h3>Step 5: Project to Logits</h3>
+
+<p>
+The final hidden state is projected through <code>lm_head</code> to produce one logit per vocabulary token. These logits are unnormalized log-probabilities — they can be any real number. The softmax in the training loop (or the temperature-adjusted softmax during inference) converts them to actual probabilities.
+</p>
+
+<div class="note">
+  <div class="note-title">Causal masking? Where?</div>
+  <p>You might notice there's no explicit causal mask (the lower-triangular matrix that prevents attending to future positions). That's because this implementation processes one token at a time, appending each new K/V to the cache as it goes. At position <em>t</em>, the cache only contains keys from positions 0 through <em>t</em> — future positions simply don't exist yet. The causal structure is <em>implicit</em> in the sequential processing order. In batch-parallel implementations (like PyTorch), you'd need an explicit mask because all positions are processed simultaneously.</p>
+</div>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">GPT Forward Pass</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># Type aliases for readability</span>
+<span class="va">Vector</span> = <span class="cl">list</span>[<span class="cl">Value</span>]          <span class="cm"># a 1-D list of Value nodes</span>
+<span class="va">KVCache</span> = <span class="cl">list</span>[<span class="cl">list</span>[<span class="va">Vector</span>]] <span class="cm"># [layer][time_step] → vector</span>
+
+
+<span class="kw">def</span> <span class="fn">gpt_forward</span>(
+    <span class="va">token_id</span>: <span class="cl">int</span>,
+    <span class="va">pos_id</span>: <span class="cl">int</span>,
+    <span class="va">key_cache</span>: <span class="va">KVCache</span>,
+    <span class="va">value_cache</span>: <span class="va">KVCache</span>,
+) -> <span class="va">Vector</span>:
+    <span class="st">"""
+    One autoregressive step of a GPT-2-style Transformer.
+
+    Processes a single token, updates the KV cache, and returns
+    logits over the vocabulary for the next token prediction.
+
+    Args:
+        token_id:    integer ID of the current token
+        pos_id:      integer position index (0-based)
+        key_cache:   running cache of key vectors per layer
+        value_cache: running cache of value vectors per layer
+
+    Returns:
+        logits: a vocab_size-length vector of unnormalized scores
+    """</span>
+    <span class="cm"># ── 1. Embedding: token identity + positional encoding ──</span>
+    <span class="va">tok_emb</span>: <span class="va">Vector</span> = <span class="va">state_dict</span>[<span class="st">"wte"</span>][<span class="va">token_id</span>]
+    <span class="va">pos_emb</span>: <span class="va">Vector</span> = <span class="va">state_dict</span>[<span class="st">"wpe"</span>][<span class="va">pos_id</span>]
+    <span class="va">x</span>: <span class="va">Vector</span> = [<span class="va">t</span> + <span class="va">p</span> <span class="kw">for</span> <span class="va">t</span>, <span class="va">p</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">tok_emb</span>, <span class="va">pos_emb</span>)]
+    <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+
+    <span class="cm"># ── 2. Transformer blocks ────────────────────────────────</span>
+    <span class="kw">for</span> <span class="va">layer_idx</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>):
+        <span class="va">prefix</span> = <span class="st">f"layer</span>{<span class="va">layer_idx</span>}<span class="st">"</span>
+
+        <span class="cm"># ─── 2a. Multi-Head Self-Attention ────────────────────</span>
+        <span class="va">x_residual</span> = <span class="va">x</span>
+        <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+
+        <span class="cm"># Project to queries, keys, values</span>
+        <span class="va">q</span>: <span class="va">Vector</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wq"</span>])
+        <span class="va">k</span>: <span class="va">Vector</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wk"</span>])
+        <span class="va">v</span>: <span class="va">Vector</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wv"</span>])
+
+        <span class="cm"># Append to KV cache (enables autoregressive decoding)</span>
+        <span class="va">key_cache</span>[<span class="va">layer_idx</span>].<span class="fn">append</span>(<span class="va">k</span>)
+        <span class="va">value_cache</span>[<span class="va">layer_idx</span>].<span class="fn">append</span>(<span class="va">v</span>)
+
+        <span class="cm"># Attention computation: one head at a time</span>
+        <span class="va">all_heads_out</span>: <span class="va">Vector</span> = []
+
+        <span class="kw">for</span> <span class="va">head_idx</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_HEADS</span>):
+            <span class="cm"># Slice this head's subspace</span>
+            <span class="va">h_start</span> = <span class="va">head_idx</span> * <span class="va">HEAD_DIM</span>
+            <span class="va">h_end</span>   = <span class="va">h_start</span> + <span class="va">HEAD_DIM</span>
+
+            <span class="va">q_h</span>: <span class="va">Vector</span>       = <span class="va">q</span>[<span class="va">h_start</span>:<span class="va">h_end</span>]
+            <span class="va">cached_k_h</span> = [<span class="va">kt</span>[<span class="va">h_start</span>:<span class="va">h_end</span>] <span class="kw">for</span> <span class="va">kt</span> <span class="kw">in</span> <span class="va">key_cache</span>[<span class="va">layer_idx</span>]]
+            <span class="va">cached_v_h</span> = [<span class="va">vt</span>[<span class="va">h_start</span>:<span class="va">h_end</span>] <span class="kw">for</span> <span class="va">vt</span> <span class="kw">in</span> <span class="va">value_cache</span>[<span class="va">layer_idx</span>]]
+            <span class="va">n_cached</span> = <span class="fn">len</span>(<span class="va">cached_k_h</span>)
+
+            <span class="cm"># Scaled dot-product attention scores</span>
+            <span class="va">scale</span> = <span class="va">HEAD_DIM</span> ** <span class="nu">0.5</span>
+            <span class="va">attn_logits</span> = [
+                <span class="fn">sum</span>(<span class="va">q_h</span>[<span class="va">d</span>] * <span class="va">cached_k_h</span>[<span class="va">t</span>][<span class="va">d</span>] <span class="kw">for</span> <span class="va">d</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">HEAD_DIM</span>)) / <span class="va">scale</span>
+                <span class="kw">for</span> <span class="va">t</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_cached</span>)
+            ]
+
+            <span class="cm"># Normalize to attention weights (probability distribution)</span>
+            <span class="va">attn_weights</span> = <span class="fn">softmax</span>(<span class="va">attn_logits</span>)
+
+            <span class="cm"># Weighted sum of value vectors</span>
+            <span class="va">head_output</span>: <span class="va">Vector</span> = [
+                <span class="fn">sum</span>(<span class="va">attn_weights</span>[<span class="va">t</span>] * <span class="va">cached_v_h</span>[<span class="va">t</span>][<span class="va">d</span>]
+                    <span class="kw">for</span> <span class="va">t</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_cached</span>))
+                <span class="kw">for</span> <span class="va">d</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">HEAD_DIM</span>)
+            ]
+            <span class="va">all_heads_out</span>.<span class="fn">extend</span>(<span class="va">head_output</span>)
+
+        <span class="cm"># Concatenated heads → output projection → residual</span>
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">all_heads_out</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.attn_wo"</span>])
+        <span class="va">x</span> = [<span class="va">a</span> + <span class="va">b</span> <span class="kw">for</span> <span class="va">a</span>, <span class="va">b</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">x</span>, <span class="va">x_residual</span>)]
+
+        <span class="cm"># ─── 2b. Feedforward MLP ─────────────────────────────</span>
+        <span class="va">x_residual</span> = <span class="va">x</span>
+        <span class="va">x</span> = <span class="fn">rmsnorm</span>(<span class="va">x</span>)
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.mlp_fc1"</span>])  <span class="cm"># expand: d → 4d</span>
+        <span class="va">x</span> = [<span class="va">xi</span>.<span class="fn">relu</span>() <span class="kw">for</span> <span class="va">xi</span> <span class="kw">in</span> <span class="va">x</span>]                      <span class="cm"># nonlinearity</span>
+        <span class="va">x</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">f"</span>{<span class="va">prefix</span>}<span class="st">.mlp_fc2"</span>])  <span class="cm"># contract: 4d → d</span>
+        <span class="va">x</span> = [<span class="va">a</span> + <span class="va">b</span> <span class="kw">for</span> <span class="va">a</span>, <span class="va">b</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="va">x</span>, <span class="va">x_residual</span>)]       <span class="cm"># residual connection</span>
+
+    <span class="cm"># ── 3. Project to vocabulary logits ──────────────────────</span>
+    <span class="va">logits</span>: <span class="va">Vector</span> = <span class="fn">linear</span>(<span class="va">x</span>, <span class="va">state_dict</span>[<span class="st">"lm_head"</span>])
+    <span class="kw">return</span> <span class="va">logits</span></code></pre>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §7  TRAINING LOOP                                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s7">
+<h2><span class="section-num">§7</span> The Training Loop — Adam Descends the Loss Landscape</h2>
+
+<p>
+We now have all the pieces: a dataset, a tokenizer, an autograd engine, and a model. Training is the iterative process of showing the model data, measuring how wrong it is, computing which direction to nudge each parameter, and nudging. Repeat a thousand times.
+</p>
+
+<h3>The Loss Function: Cross-Entropy</h3>
+
+<p>
+The model's job is to predict the next token at each position. The <strong>cross-entropy loss</strong> measures how surprised the model is by the correct answer. If the model assigns high probability to the correct token, the loss is low; if it assigns low probability, the loss is high.
+</p>
+
+<div class="math-box">
+  <div class="math-label">Cross-Entropy Loss at Position t</div>
+  <span class="math">L<sub>t</sub> = −log(p<sub>target</sub>)</span>
+  <br><br>
+  where <span class="math">p<sub>target</sub></span> is the model's predicted probability for the correct next token.
+  <br>
+  If <span class="math">p<sub>target</sub> = 1.0</span> (perfect prediction), loss = 0.
+  <br>
+  If <span class="math">p<sub>target</sub> → 0</span> (terrible prediction), loss → ∞.
+  <br><br>
+  Final loss: <span class="math">L = (1/n) Σ<sub>t</sub> L<sub>t</sub></span> (average over all positions)
+</div>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Training Loop</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="cm"># Adam optimizer buffers</span>
+<span class="va">learning_rate</span>, <span class="va">beta1</span>, <span class="va">beta2</span>, <span class="va">eps_adam</span> = <span class="nu">0.01</span>, <span class="nu">0.85</span>, <span class="nu">0.99</span>, <span class="nu">1e-8</span>
+<span class="va">m</span> = [<span class="nu">0.0</span>] * <span class="fn">len</span>(<span class="va">params</span>)
+<span class="va">v</span> = [<span class="nu">0.0</span>] * <span class="fn">len</span>(<span class="va">params</span>)
+
+<span class="va">num_steps</span> = <span class="nu">1000</span>
+<span class="kw">for</span> <span class="va">step</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">num_steps</span>):
+
+    <span class="cm"># Tokenize one document</span>
+    <span class="va">doc</span> = <span class="va">docs</span>[<span class="va">step</span> % <span class="fn">len</span>(<span class="va">docs</span>)]
+    <span class="va">tokens</span> = [<span class="va">BOS</span>] + [<span class="va">uchars</span>.<span class="fn">index</span>(<span class="va">ch</span>) <span class="kw">for</span> <span class="va">ch</span> <span class="kw">in</span> <span class="va">doc</span>] + [<span class="va">BOS</span>]
+    <span class="va">n</span> = <span class="fn">min</span>(<span class="va">block_size</span>, <span class="fn">len</span>(<span class="va">tokens</span>) - <span class="nu">1</span>)
+
+    <span class="cm"># Forward pass: compute loss</span>
+    <span class="va">keys</span>, <span class="va">values</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>)], [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>)]
+    <span class="va">losses</span> = []
+    <span class="kw">for</span> <span class="va">pos_id</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n</span>):
+        <span class="va">token_id</span>, <span class="va">target_id</span> = <span class="va">tokens</span>[<span class="va">pos_id</span>], <span class="va">tokens</span>[<span class="va">pos_id</span> + <span class="nu">1</span>]
+        <span class="va">logits</span> = <span class="fn">gpt</span>(<span class="va">token_id</span>, <span class="va">pos_id</span>, <span class="va">keys</span>, <span class="va">values</span>)
+        <span class="va">probs</span> = <span class="fn">softmax</span>(<span class="va">logits</span>)
+        <span class="va">loss_t</span> = -<span class="va">probs</span>[<span class="va">target_id</span>].<span class="fn">log</span>()
+        <span class="va">losses</span>.<span class="fn">append</span>(<span class="va">loss_t</span>)
+    <span class="va">loss</span> = (<span class="nu">1</span> / <span class="va">n</span>) * <span class="fn">sum</span>(<span class="va">losses</span>)
+
+    <span class="cm"># Backward pass</span>
+    <span class="va">loss</span>.<span class="fn">backward</span>()
+
+    <span class="cm"># Adam update</span>
+    <span class="va">lr_t</span> = <span class="va">learning_rate</span> * (<span class="nu">1</span> - <span class="va">step</span> / <span class="va">num_steps</span>)
+    <span class="kw">for</span> <span class="va">i</span>, <span class="va">p</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="va">params</span>):
+        <span class="va">m</span>[<span class="va">i</span>] = <span class="va">beta1</span> * <span class="va">m</span>[<span class="va">i</span>] + (<span class="nu">1</span> - <span class="va">beta1</span>) * <span class="va">p</span>.<span class="va">grad</span>
+        <span class="va">v</span>[<span class="va">i</span>] = <span class="va">beta2</span> * <span class="va">v</span>[<span class="va">i</span>] + (<span class="nu">1</span> - <span class="va">beta2</span>) * <span class="va">p</span>.<span class="va">grad</span> ** <span class="nu">2</span>
+        <span class="va">m_hat</span> = <span class="va">m</span>[<span class="va">i</span>] / (<span class="nu">1</span> - <span class="va">beta1</span> ** (<span class="va">step</span> + <span class="nu">1</span>))
+        <span class="va">v_hat</span> = <span class="va">v</span>[<span class="va">i</span>] / (<span class="nu">1</span> - <span class="va">beta2</span> ** (<span class="va">step</span> + <span class="nu">1</span>))
+        <span class="va">p</span>.<span class="va">data</span> -= <span class="va">lr_t</span> * <span class="va">m_hat</span> / (<span class="va">v_hat</span> ** <span class="nu">0.5</span> + <span class="va">eps_adam</span>)
+        <span class="va">p</span>.<span class="va">grad</span> = <span class="nu">0</span>
+
+    <span class="fn">print</span>(<span class="st">f"step </span>{<span class="va">step</span>+<span class="nu">1</span>:<span class="nu">4</span><span class="va">d</span>}<span class="st"> / </span>{<span class="va">num_steps</span>:<span class="nu">4</span><span class="va">d</span>}<span class="st"> | loss </span>{<span class="va">loss</span>.<span class="va">data</span>:<span class="st">.4f</span>}<span class="st">"</span>)</code></pre>
+</div>
+
+<h3>The Forward Pass in Training</h3>
+
+<p>
+For each training step, we take one name, tokenize it (bookended by BOS), and process it token by token. At each position, the model predicts the next token. We compute the loss (negative log probability of the correct token) and accumulate it. The final loss is the average over all positions.
+</p>
+
+<p>
+Note the phrase <code>step % len(docs)</code>: we cycle through the dataset. After seeing all 32,000 names, we start over. With only 1,000 training steps, we see each name at most once, so there's no overfitting risk.
+</p>
+
+<h3>The Adam Optimizer</h3>
+
+<p>
+After the backward pass fills all <code>.grad</code> fields, we need to update the parameters. Vanilla gradient descent would simply do <code>p.data -= lr * p.grad</code>, but <strong>Adam</strong> (Adaptive Moment Estimation) is far more effective. It maintains two running averages per parameter:
+</p>
+
+<ul class="prose-list">
+  <li><strong><code>m</code></strong> — the <em>first moment</em> (exponential moving average of the gradient). This is the "momentum" term: if a parameter has been consistently pushed in one direction, the momentum builds up and accelerates movement.</li>
+  <li><strong><code>v</code></strong> — the <em>second moment</em> (exponential moving average of the squared gradient). This is the "adaptive learning rate" term: parameters with consistently large gradients get a smaller effective learning rate (dividing by √v normalizes them).</li>
+</ul>
+
+<div class="math-box">
+  <div class="math-label">Adam Optimizer Update</div>
+  <span class="math">m<sub>t</sub> = β₁ · m<sub>t−1</sub> + (1 − β₁) · g<sub>t</sub></span> &nbsp;&nbsp;&nbsp; (momentum)<br>
+  <span class="math">v<sub>t</sub> = β₂ · v<sub>t−1</sub> + (1 − β₂) · g<sub>t</sub>²</span> &nbsp;&nbsp;&nbsp; (adaptive scale)<br><br>
+  <span class="math">m̂<sub>t</sub> = m<sub>t</sub> / (1 − β₁<sup>t</sup>)</span> &nbsp;&nbsp;&nbsp; (bias correction)<br>
+  <span class="math">v̂<sub>t</sub> = v<sub>t</sub> / (1 − β₂<sup>t</sup>)</span> &nbsp;&nbsp;&nbsp; (bias correction)<br><br>
+  <span class="math">θ<sub>t+1</sub> = θ<sub>t</sub> − η<sub>t</sub> · m̂<sub>t</sub> / (√v̂<sub>t</sub> + ε)</span>
+</div>
+
+<p>
+The <strong>bias correction</strong> (dividing by <code>1 - beta^t</code>) compensates for the fact that <code>m</code> and <code>v</code> are initialized to zero: without correction, early estimates would be biased toward zero. As <code>t</code> grows, the correction factor approaches 1 and becomes irrelevant.
+</p>
+
+<p>
+The <strong>linear learning rate decay</strong> (<code>lr_t = lr * (1 - step / num_steps)</code>) gradually reduces the learning rate from 0.01 to 0 over the course of training. This is a common technique: large steps early (for fast exploration) and small steps later (for fine-tuning).
+</p>
+
+<p>
+After updating each parameter, its gradient is reset to zero (<code>p.grad = 0</code>) to prepare for the next step. Without this, gradients from different steps would accumulate.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Training Loop</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># ── Optimizer hyperparameters ─────────────────────────────</span>
+<span class="va">LEARNING_RATE</span>: <span class="cl">float</span> = <span class="nu">0.01</span>
+<span class="va">BETA1</span>:         <span class="cl">float</span> = <span class="nu">0.85</span>   <span class="cm"># momentum decay</span>
+<span class="va">BETA2</span>:         <span class="cl">float</span> = <span class="nu">0.99</span>   <span class="cm"># adaptive lr decay</span>
+<span class="va">ADAM_EPS</span>:      <span class="cl">float</span> = <span class="nu">1e-8</span>   <span class="cm"># numerical stability</span>
+<span class="va">NUM_STEPS</span>:     <span class="cl">int</span>   = <span class="nu">1000</span>
+
+<span class="cm"># Adam state buffers (one per parameter)</span>
+<span class="va">n_params</span> = <span class="fn">len</span>(<span class="va">all_parameters</span>)
+<span class="va">moment1</span> = [<span class="nu">0.0</span>] * <span class="va">n_params</span>  <span class="cm"># first moment (gradient mean)</span>
+<span class="va">moment2</span> = [<span class="nu">0.0</span>] * <span class="va">n_params</span>  <span class="cm"># second moment (gradient variance)</span>
+
+<span class="cm"># ── Training loop ─────────────────────────────────────────</span>
+<span class="kw">for</span> <span class="va">step</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">NUM_STEPS</span>):
+
+    <span class="cm"># ─── Select and tokenize one training document ───────</span>
+    <span class="va">doc</span> = <span class="va">documents</span>[<span class="va">step</span> % <span class="fn">len</span>(<span class="va">documents</span>)]
+    <span class="va">tokens</span> = <span class="fn">encode</span>(<span class="va">doc</span>)  <span class="cm"># [BOS, char1, char2, ..., BOS]</span>
+    <span class="va">seq_len</span> = <span class="fn">min</span>(<span class="va">BLOCK_SIZE</span>, <span class="fn">len</span>(<span class="va">tokens</span>) - <span class="nu">1</span>)
+
+    <span class="cm"># ─── Forward pass: build the computation graph ───────</span>
+    <span class="va">key_cache</span>:   <span class="va">KVCache</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>)]
+    <span class="va">value_cache</span>: <span class="va">KVCache</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>)]
+    <span class="va">position_losses</span>: <span class="cl">list</span>[<span class="cl">Value</span>] = []
+
+    <span class="kw">for</span> <span class="va">pos</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">seq_len</span>):
+        <span class="va">input_token</span>  = <span class="va">tokens</span>[<span class="va">pos</span>]
+        <span class="va">target_token</span> = <span class="va">tokens</span>[<span class="va">pos</span> + <span class="nu">1</span>]
+
+        <span class="cm"># Model predicts next token distribution</span>
+        <span class="va">logits</span> = <span class="fn">gpt_forward</span>(<span class="va">input_token</span>, <span class="va">pos</span>, <span class="va">key_cache</span>, <span class="va">value_cache</span>)
+        <span class="va">probs</span>  = <span class="fn">softmax</span>(<span class="va">logits</span>)
+
+        <span class="cm"># Cross-entropy loss: -log P(correct token)</span>
+        <span class="va">loss_at_pos</span> = -<span class="va">probs</span>[<span class="va">target_token</span>].<span class="fn">log</span>()
+        <span class="va">position_losses</span>.<span class="fn">append</span>(<span class="va">loss_at_pos</span>)
+
+    <span class="cm"># Average loss over all positions</span>
+    <span class="va">total_loss</span>: <span class="cl">Value</span> = (<span class="nu">1</span> / <span class="va">seq_len</span>) * <span class="fn">sum</span>(<span class="va">position_losses</span>)
+
+    <span class="cm"># ─── Backward pass: compute all gradients ─────────────</span>
+    <span class="va">total_loss</span>.<span class="fn">backward</span>()
+
+    <span class="cm"># ─── Adam optimizer update ────────────────────────────</span>
+    <span class="va">t</span> = <span class="va">step</span> + <span class="nu">1</span>  <span class="cm"># 1-indexed step for bias correction</span>
+    <span class="va">lr_t</span> = <span class="va">LEARNING_RATE</span> * (<span class="nu">1.0</span> - <span class="va">step</span> / <span class="va">NUM_STEPS</span>)  <span class="cm"># linear decay</span>
+
+    <span class="kw">for</span> <span class="va">i</span>, <span class="va">param</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="va">all_parameters</span>):
+        <span class="va">g</span> = <span class="va">param</span>.<span class="va">grad</span>
+
+        <span class="cm"># Update biased moment estimates</span>
+        <span class="va">moment1</span>[<span class="va">i</span>] = <span class="va">BETA1</span> * <span class="va">moment1</span>[<span class="va">i</span>] + (<span class="nu">1</span> - <span class="va">BETA1</span>) * <span class="va">g</span>
+        <span class="va">moment2</span>[<span class="va">i</span>] = <span class="va">BETA2</span> * <span class="va">moment2</span>[<span class="va">i</span>] + (<span class="nu">1</span> - <span class="va">BETA2</span>) * <span class="va">g</span> ** <span class="nu">2</span>
+
+        <span class="cm"># Bias-corrected estimates</span>
+        <span class="va">m_corrected</span> = <span class="va">moment1</span>[<span class="va">i</span>] / (<span class="nu">1</span> - <span class="va">BETA1</span> ** <span class="va">t</span>)
+        <span class="va">v_corrected</span> = <span class="va">moment2</span>[<span class="va">i</span>] / (<span class="nu">1</span> - <span class="va">BETA2</span> ** <span class="va">t</span>)
+
+        <span class="cm"># Parameter update</span>
+        <span class="va">param</span>.<span class="va">data</span> -= <span class="va">lr_t</span> * <span class="va">m_corrected</span> / (<span class="va">v_corrected</span> ** <span class="nu">0.5</span> + <span class="va">ADAM_EPS</span>)
+
+        <span class="cm"># Reset gradient for next step</span>
+        <span class="va">param</span>.<span class="va">grad</span> = <span class="nu">0.0</span>
+
+    <span class="fn">print</span>(<span class="st">f"step </span>{<span class="va">t</span>:<span class="nu">4</span><span class="va">d</span>}<span class="st"> / </span>{<span class="va">NUM_STEPS</span>:<span class="nu">4</span><span class="va">d</span>}<span class="st"> | loss </span>{<span class="va">total_loss</span>.<span class="va">data</span>:<span class="st">.4f</span>}<span class="st">"</span>)</code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Batch size = 1</div>
+  <p>This trains on one name at a time — a batch size of 1. In practice, larger batches (32, 256, or more) give more stable gradient estimates and enable parallelism on GPUs. But conceptually, batch size 1 is the purest form: see one example, learn from it, repeat.</p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §8  INFERENCE                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s8">
+<h2><span class="section-num">§8</span> Inference — Sampling New Names</h2>
+
+<p>
+After training, the model has learned statistical patterns about names. Now we generate new names by sampling from the model's learned distribution, one token at a time. This is <strong>autoregressive generation</strong>: feed in BOS, sample a character, feed that character back in, sample the next one, and repeat until the model predicts BOS (signaling it wants to stop) or we hit the maximum length.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Inference / Generation</span>
+    <span class="code-tag original">Original</span>
+  </div>
+  <pre><code><span class="va">temperature</span> = <span class="nu">0.5</span>
+<span class="fn">print</span>(<span class="st">"\n--- inference (new, hallucinated names) ---"</span>)
+<span class="kw">for</span> <span class="va">sample_idx</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">20</span>):
+    <span class="va">keys</span>, <span class="va">values</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>)], [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">n_layer</span>)]
+    <span class="va">token_id</span> = <span class="va">BOS</span>
+    <span class="va">sample</span> = []
+    <span class="kw">for</span> <span class="va">pos_id</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">block_size</span>):
+        <span class="va">logits</span> = <span class="fn">gpt</span>(<span class="va">token_id</span>, <span class="va">pos_id</span>, <span class="va">keys</span>, <span class="va">values</span>)
+        <span class="va">probs</span> = <span class="fn">softmax</span>([<span class="va">l</span> / <span class="va">temperature</span> <span class="kw">for</span> <span class="va">l</span> <span class="kw">in</span> <span class="va">logits</span>])
+        <span class="va">token_id</span> = <span class="va">random</span>.<span class="fn">choices</span>(<span class="fn">range</span>(<span class="va">vocab_size</span>), <span class="va">weights</span>=[<span class="va">p</span>.<span class="va">data</span> <span class="kw">for</span> <span class="va">p</span> <span class="kw">in</span> <span class="va">probs</span>])[<span class="nu">0</span>]
+        <span class="kw">if</span> <span class="va">token_id</span> == <span class="va">BOS</span>:
+            <span class="kw">break</span>
+        <span class="va">sample</span>.<span class="fn">append</span>(<span class="va">uchars</span>[<span class="va">token_id</span>])
+    <span class="fn">print</span>(<span class="st">f"sample </span>{<span class="va">sample_idx</span>+<span class="nu">1</span>:<span class="nu">2</span><span class="va">d</span>}<span class="st">: </span>{<span class="st">''</span>.<span class="fn">join</span>(<span class="va">sample</span>)}<span class="st">"</span>)</code></pre>
+</div>
+
+<h3>Temperature Scaling</h3>
+
+<p>
+The <strong>temperature</strong> parameter controls the "creativity" of generation. Before applying softmax, each logit is divided by the temperature:
+</p>
+
+<div class="math-box">
+  <div class="math-label">Temperature Scaling</div>
+  <span class="math">p<sub>i</sub> = softmax(z<sub>i</sub> / τ)</span>
+  <br><br>
+  <span class="math">τ = 1.0</span> → unchanged distribution (model's natural confidence).<br>
+  <span class="math">τ → 0</span> → argmax (always pick the most likely token, deterministic).<br>
+  <span class="math">τ > 1.0</span> → flatter distribution (more randomness, more "creative").<br>
+  <span class="math">τ = 0.5</span> → moderately sharpened (slightly more conservative than the raw model).
+</div>
+
+<p>
+At temperature 0.5, the distribution is sharpened: high-probability tokens become even more likely, and low-probability tokens become nearly impossible. This produces more "typical" names. At temperature 1.0, you'd get the model's raw distribution, including more unusual character sequences. At high temperatures, you'd get near-random gibberish.
+</p>
+
+<h3>Sampling Mechanics</h3>
+
+<p>
+<code>random.choices</code> performs <strong>weighted random sampling</strong>: it selects one token ID from the vocabulary, with each token weighted by its probability. This is equivalent to rolling a loaded die where the faces have unequal probabilities.
+</p>
+
+<p>
+The sampling loop terminates in two ways: the model predicts BOS (it chose to end the name), or we reach <code>block_size</code> positions (hard length limit). Each sample starts with a fresh KV-cache, so the model has no memory between samples.
+</p>
+
+<div class="code-block">
+  <div class="code-header">
+    <span class="code-label">Inference / Generation</span>
+    <span class="code-tag rewrite">Rewrite</span>
+  </div>
+  <pre><code><span class="cm"># ── Inference: generate new names ─────────────────────────</span>
+<span class="va">TEMPERATURE</span>: <span class="cl">float</span> = <span class="nu">0.5</span>   <span class="cm"># &lt;1 = conservative, 1 = raw, &gt;1 = creative</span>
+<span class="va">NUM_SAMPLES</span>: <span class="cl">int</span>   = <span class="nu">20</span>
+
+<span class="fn">print</span>(<span class="st">"\n── Generated Names (hallucinated) ──"</span>)
+
+<span class="kw">for</span> <span class="va">sample_idx</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">NUM_SAMPLES</span>):
+    <span class="cm"># Fresh KV cache for each sample</span>
+    <span class="va">key_cache</span>   = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>)]
+    <span class="va">value_cache</span> = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="va">N_LAYERS</span>)]
+
+    <span class="va">current_token</span> = <span class="va">BOS_TOKEN_ID</span>
+    <span class="va">generated_chars</span>: <span class="cl">list</span>[<span class="cl">str</span>] = []
+
+    <span class="kw">for</span> <span class="va">pos</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">BLOCK_SIZE</span>):
+        <span class="cm"># Get next-token distribution</span>
+        <span class="va">logits</span> = <span class="fn">gpt_forward</span>(<span class="va">current_token</span>, <span class="va">pos</span>, <span class="va">key_cache</span>, <span class="va">value_cache</span>)
+
+        <span class="cm"># Apply temperature scaling before softmax</span>
+        <span class="va">scaled_logits</span> = [<span class="va">logit</span> / <span class="va">TEMPERATURE</span> <span class="kw">for</span> <span class="va">logit</span> <span class="kw">in</span> <span class="va">logits</span>]
+        <span class="va">probs</span> = <span class="fn">softmax</span>(<span class="va">scaled_logits</span>)
+
+        <span class="cm"># Sample from the distribution</span>
+        <span class="va">prob_weights</span> = [<span class="va">p</span>.<span class="va">data</span> <span class="kw">for</span> <span class="va">p</span> <span class="kw">in</span> <span class="va">probs</span>]
+        <span class="va">current_token</span> = <span class="va">random</span>.<span class="fn">choices</span>(
+            <span class="fn">range</span>(<span class="va">VOCAB_SIZE</span>), <span class="va">weights</span>=<span class="va">prob_weights</span>
+        )[<span class="nu">0</span>]
+
+        <span class="cm"># Stop if the model predicts end-of-sequence</span>
+        <span class="kw">if</span> <span class="va">current_token</span> == <span class="va">BOS_TOKEN_ID</span>:
+            <span class="kw">break</span>
+
+        <span class="va">generated_chars</span>.<span class="fn">append</span>(<span class="va">id_to_char</span>[<span class="va">current_token</span>])
+
+    <span class="va">name</span> = <span class="st">""</span>.<span class="fn">join</span>(<span class="va">generated_chars</span>)
+    <span class="fn">print</span>(<span class="st">f"  </span>{<span class="va">sample_idx</span> + <span class="nu">1</span>:<span class="nu">2</span><span class="va">d</span>}<span class="st">. </span>{<span class="va">name</span>}<span class="st">"</span>)</code></pre>
+</div>
+
+<div class="note">
+  <div class="note-title">Why no gradients during inference?</div>
+  <p>Notice that inference uses the same <code>gpt()</code> function as training. Every operation still creates <code>Value</code> nodes and tracks the computation graph. In a real system, you'd disable gradient tracking during inference (PyTorch's <code>torch.no_grad()</code>) to save memory and time. Here, the overhead doesn't matter — it's a few dozen tokens — and the code simplicity is worth it.</p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- §9  EPILOGUE                                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s9">
+<h2><span class="section-num">§9</span> Epilogue — Where Efficiency Begins</h2>
+
+<p>
+Karpathy's opening comment is both declaration and invitation: <em>"This file is the complete algorithm. Everything else is just efficiency."</em> Let's enumerate exactly what "everything else" includes — the gap between this beautiful, transparent code and a production LLM:
+</p>
+
+<p>
+<strong>Tensor operations.</strong> This code operates on individual scalars. PyTorch (and its backends: CUDA, cuDNN, BLAS) operate on entire tensors — matrices and batches of matrices — using highly optimized hardware instructions. A single GPU matrix multiplication replaces thousands of Python loops.
+</p>
+
+<p>
+<strong>Parallelism.</strong> During training, GPTs process entire sequences in parallel (not token by token) using masked self-attention. During inference, the KV-cache pattern shown here is exactly what production systems use — but implemented in optimized CUDA kernels, not Python lists.
+</p>
+
+<p>
+<strong>Batching.</strong> Instead of processing one document per step, production systems process hundreds or thousands simultaneously, amortizing the overhead of GPU kernel launches and memory transfers.
+</p>
+
+<p>
+<strong>Mixed precision.</strong> Modern training uses float16 or bfloat16 for most operations, with float32 only where needed for numerical stability. This halves memory usage and roughly doubles throughput.
+</p>
+
+<p>
+<strong>Distributed training.</strong> GPT-3 was trained across thousands of GPUs, using techniques like data parallelism, tensor parallelism, and pipeline parallelism to split the work.
+</p>
+
+<p>
+<strong>Tokenization.</strong> BPE (Byte Pair Encoding) tokenizers split text into subword units, dramatically reducing sequence lengths compared to character-level tokenization. This is critical for handling large vocabularies and long documents.
+</p>
+
+<p>
+<strong>Architecture refinements.</strong> Rotary position embeddings (RoPE) instead of learned absolute positions, SwiGLU instead of ReLU, grouped query attention (GQA), flash attention for memory-efficient softmax, and dozens of other improvements.
+</p>
+
+<p>
+But strip all of that away, and what remains is exactly this: embeddings, attention, MLPs, softmax, cross-entropy loss, backpropagation, and Adam. A Transformer is a function. Training is optimization. Generation is sampling. That's it. The rest is engineering.
+</p>
+
+<div class="note">
+  <div class="note-title">Further Reading</div>
+  <p>
+  To go deeper: <em>"Attention Is All You Need"</em> (Vaswani et al., 2017) introduced the Transformer. <em>"Language Models are Unsupervised Multitask Learners"</em> (Radford et al., 2019) described GPT-2. Karpathy's own <em>micrograd</em> and <em>nanoGPT</em> repositories are the natural next steps from this code — they add PyTorch efficiency while preserving educational clarity.
+  </p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- FOOTER                                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<footer>
+  <p>The Annotated MicroGPT</p>
+  <p class="sig">Original code by Andrej Karpathy. Annotations &amp; rewrites by Claude.</p>
+</footer>
+
+</div><!-- .container -->
+</body>
+</html>
