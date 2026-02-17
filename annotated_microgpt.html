@@ -5,22 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Annotated MicroGPT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&amp;family=JetBrains+Mono:wght@300;400;500;600&amp;family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #faf8f5;
-  --bg-code: #1e1e2e;
-  --bg-note: #f0ede8;
-  --bg-math: #eef1f8;
-  --text: #2c2825;
-  --text-secondary: #6b6560;
+  color-scheme: dark;
+  --bg: #0b1018;
+  --bg-code: #0f1724;
+  --bg-note: #121b28;
+  --bg-math: #101c2f;
+  --bg-surface: #111927;
+  --text: #e8edf6;
+  --text-secondary: #a7b3c6;
   --text-code: #cdd6f4;
-  --accent: #c05030;
-  --accent-light: #e8bfb0;
-  --accent-dark: #8a2a18;
-  --border: #d8d2ca;
-  --link: #2860a8;
-  --heading: #1a1715;
+  --accent: #f08c5c;
+  --accent-light: #ffd0b7;
+  --accent-dark: #f7b393;
+  --border: #273449;
+  --link: #8ab4ff;
+  --heading: #f7faff;
   --keyword: #cba6f7;
   --string: #a6e3a1;
   --comment: #6c7086;
@@ -38,7 +40,10 @@ html { font-size: 17px; scroll-behavior: smooth; }
 
 body {
   font-family: 'Crimson Pro', Georgia, serif;
-  background: var(--bg);
+  background:
+    radial-gradient(120rem 90rem at 12% -10%, #1a2740 0%, transparent 55%),
+    radial-gradient(85rem 70rem at 92% -20%, #2a1f3b 0%, transparent 48%),
+    var(--bg);
   color: var(--text);
   line-height: 1.72;
   -webkit-font-smoothing: antialiased;
@@ -209,11 +214,12 @@ a:hover { color: var(--accent); }
   margin: 1.8rem 0;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
 }
 
 .code-header {
-  background: #181825;
+  background: #0d1522;
   padding: 0.6rem 1.25rem;
   display: flex;
   justify-content: space-between;
@@ -225,7 +231,7 @@ a:hover { color: var(--accent); }
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a6adc8;
+  color: #b5c0d6;
 }
 
 .code-tag {
@@ -266,23 +272,24 @@ pre code {
 code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85em;
-  background: rgba(0,0,0,0.06);
+  background: rgba(138, 180, 255, 0.12);
+  border: 1px solid rgba(138, 180, 255, 0.2);
   padding: 0.1em 0.35em;
   border-radius: 3px;
   color: var(--accent-dark);
 }
 
 /* syntax highlighting classes */
-.kw { color: #cba6f7; font-weight: 500; }
-.fn { color: #89b4fa; }
-.st { color: #a6e3a1; }
-.cm { color: #6c7086; font-style: italic; }
-.nu { color: #fab387; }
-.cl { color: #f9e2af; }
-.bi { color: #94e2d5; }
-.op { color: #89dceb; }
-.dc { color: #f5c2e7; }
-.va { color: #cdd6f4; }
+.kw { color: var(--keyword); font-weight: 500; }
+.fn { color: var(--function); }
+.st { color: var(--string); }
+.cm { color: var(--comment); font-style: italic; }
+.nu { color: var(--number); }
+.cl { color: var(--class); }
+.bi { color: var(--builtin); }
+.op { color: var(--operator); }
+.dc { color: var(--decorator); }
+.va { color: var(--text-code); }
 .se { color: #f2cdcd; }
 
 /* ── Note / Math / Aside boxes ── */
@@ -291,6 +298,9 @@ code {
   padding: 1.25rem 1.5rem;
   background: var(--bg-note);
   border-left: 3px solid var(--accent);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   border-radius: 0 6px 6px 0;
   font-size: 0.98rem;
 }
@@ -310,7 +320,7 @@ code {
   padding: 1.25rem 1.75rem;
   background: var(--bg-math);
   border-radius: 8px;
-  border: 1px solid #d0d8e8;
+  border: 1px solid var(--border);
   text-align: center;
   font-size: 1.05rem;
   line-height: 1.9;
@@ -321,7 +331,7 @@ code {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #5570a0;
+  color: var(--link);
   margin-bottom: 0.5rem;
   text-align: left;
 }
@@ -339,7 +349,7 @@ code {
 .diagram {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   text-align: center;
@@ -410,7 +420,7 @@ footer .sig {
   <div class="subtitle">A line-by-line walkthrough of training a GPT from absolute zero,<br>in pure, dependency-free Python.</div>
   <div class="meta">Based on <code>microgpt.py</code> by Andrej Karpathy &nbsp;·&nbsp; Annotated 2025</div>
   <div class="epigraph">
-    "The most atomic way to train and inference a GPT in pure, dependency-free Python.
+    "The most atomic way to train and run inference on a GPT in pure, dependency-free Python.
     This file is the complete algorithm. Everything else is just efficiency."
     <cite>— Andrej Karpathy, microgpt.py</cite>
   </div>
@@ -442,7 +452,7 @@ footer .sig {
 <h2><span class="section-num">§0</span> Prologue — What Is This?</h2>
 
 <p>
-<code>microgpt.py</code> is a single Python file — roughly 140 lines of logic — that contains <em>every single component</em> needed to train a GPT language model and generate text from it. There are no dependencies: no PyTorch, no NumPy, no TensorFlow. It is Python, <code>math</code>, and <code>random</code> — nothing else.
+<code>microgpt.py</code> is a single Python file — roughly 200 lines, with about 140 lines of core logic — that contains <em>every single component</em> needed to train a GPT language model and generate text from it. There are no dependencies: no PyTorch, no NumPy, no TensorFlow. It is Python, <code>math</code>, and <code>random</code> — nothing else.
 </p>
 
 <p>
@@ -948,7 +958,7 @@ Before the model can learn anything, we must allocate its parameters — the num
 
 <div class="code-block">
   <div class="code-header">
-    <span class="code-label">Hyperparameters & Parameter Initialization</span>
+    <span class="code-label">Hyperparameters &amp; Parameter Initialization</span>
     <span class="code-tag original">Original</span>
   </div>
   <pre><code><span class="va">n_embd</span> = <span class="nu">16</span>       <span class="cm"># embedding dimension</span>
@@ -1009,7 +1019,7 @@ The <code>state_dict</code> is a dictionary mapping parameter names to 2D lists 
 
 <div class="code-block">
   <div class="code-header">
-    <span class="code-label">Hyperparameters & Parameter Initialization</span>
+    <span class="code-label">Hyperparameters &amp; Parameter Initialization</span>
     <span class="code-tag rewrite">Rewrite</span>
   </div>
   <pre><code><span class="cm"># ── Model hyperparameters ─────────────────────────────────</span>
@@ -1878,7 +1888,7 @@ But strip all of that away, and what remains is exactly this: embeddings, attent
 <!-- ══════════════════════════════════════════════════════════ -->
 <footer>
   <p>The Annotated MicroGPT</p>
-  <p class="sig">Original code by Andrej Karpathy. Annotations &amp; rewrites by Claude.</p>
+  <p class="sig">Original code by Andrej Karpathy. Annotated and rewritten for educational clarity.</p>
 </footer>
 
 </div><!-- .container -->
