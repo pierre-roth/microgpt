@@ -1,8 +1,10 @@
-# The Annotated Transformer: microgpt
+# The Annotated MicroGPT
 
 This repository is an educational, annotated presentation of Andrej Karpathy's `microgpt.py`: a dependency-free, single-file GPT implementation introduced on **February 12, 2026**.
 
-The goal of this project is to keep the algorithmic core intact while making the Transformer mechanics explicit and readable. Think of it as an "Annotated Transformer" edition of microgpt.
+The goal of this project is to keep the algorithmic core intact while making the Transformer mechanics explicit and readable.
+
+The annotation style and project idea are inspired by **The Annotated Transformer** project: take a dense model implementation and explain it in a line-by-line, educational format.
 
 ## What's in this repo
 
