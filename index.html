@@ -1269,14 +1269,14 @@ Crucially, this is designed for <strong>autoregressive (causal) inference</stron
 <div class="diagram">
 <pre>
   ┌─────────────────────────────────────────────────────┐
-  │              GPT Forward Pass (one token)            │
+  │              GPT Forward Pass (one token)           │
   │                                                     │
   │   token_id ──→ [Token Embedding Table] ──→ tok_emb  │
   │   pos_id   ──→ [Position Embedding Table] ─→ pos_emb│
   │                        │                            │
-  │                tok_emb + pos_emb                     │
+  │                tok_emb + pos_emb                    │
   │                        │                            │
-  │                    RMSNorm                           │
+  │                    RMSNorm                          │
   │                        │                            │
   │           ┌────────────┴────────────┐               │
   │           │    Transformer Block    │  × N_LAYERS   │
@@ -1288,7 +1288,7 @@ Crucially, this is designed for <strong>autoregressive (causal) inference</stron
   │           │      + residual         │               │
   │           │         │               │               │
   │           │  ┌── RMSNorm ────────┐  │               │
-  │           │  │  MLP (fc1→ReLU→fc2)│  │               │
+  │           │    MLP (fc1→ReLU→fc2)│  │               │
   │           │  └──────┬────────────┘  │               │
   │           │      + residual         │               │
   │           └─────────┴───────────────┘               │
